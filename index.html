@@ -2,28 +2,31 @@
 <html>
 <head>
 
-	<title>Gaming Experiment</title>
-	<style>
-		body {
-			margin: 0;
-			padding: 0;
-			background-color: #000;
-		}
+<title>Gaming Experiment</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: #000;
+    }
 
-		.rendererView {
-			position: absolute;
-			display: block;
-			width: 100%;
-			height: 100%;
-		}
-	</style>
-	
-	<script src="lib/pixi.dev.js"></script>
+    .rendererView {
+        position: absolute;
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+</style>
+
+<script src="lib/pixi.dev.js"></script>
 
 </head>
 <body>
 
 <script>
+var score = 0;
+var life = 10;
+var level = 1;
 window.setTimeout(function() {
     var viewWidth = 800;
     var viewHeight = 600;
@@ -47,97 +50,154 @@ window.setTimeout(function() {
     // create a texture from an image path
     var texture = PIXI.Texture.fromImage("gfx/sheep.png");
 
-    var thing = new PIXI.Graphics();
-    //thing.position.x = 200;
-    //thing.position.y = 200 / 2;
-    thing.lineStyle(3, 0x349574, 0.8);
-    thing.beginFill(0x8bc5ff, 0.7);
-    thing.moveTo(0,0);
-    thing.lineTo(300,100);
-    thing.lineTo(400,220);
-    thing.lineTo(100,320);
-    stage.addChild(thing);    
+    var masks = {};
+    // mask
+    var mask = new PIXI.Graphics();
+    //mask.position.x = 200;
+    //mask.position.y = 200;
+    mask.lineStyle(3, 0x349574, 0.8);
+    mask.beginFill(0x8bc5ff, 0.7);
+    mask.moveTo(0,0);
+    mask.lineTo(300,100);
+    mask.lineTo(400,220);
+    mask.lineTo(100,320);
+    stage.addChild(mask);
+    masks.sky = mask;
+
+    var msk = new PIXI.Graphics();
+    msk.lineStyle(2, 0x999574, 0.6);
+    msk.beginFill(0x8bc566, 0.8);
+    msk.moveTo(423, 350);
+    msk.lineTo(432,560);
+    msk.lineTo(200,560);
+    msk.lineTo(200,350);
+    stage.addChild(msk);
+    masks.house1 = msk;
+
+    var defs = [
+        {x:200, y:-60, axis:"y", speed:0.2, howMany:800, mask:"sky"},
+        {x:480, y:420, axis:"x", speed:-0.2, howMany:500, mask:"house1"},
+        {x:880, y:200, axis:"x", speed:-0.2, howMany:500},
+        {x:-80, y:300, axis:"x", speed:0.2, howMany:700},
+        {x:300, y:660, axis:"y", speed:-0.2, howMany:500}
+    ];
+
+    var scoreText = new PIXI.Text("Score: " + score, { font: "28px sans-serif", fill: "maroon", align: "left" });
+    scoreText.position.x = 10;
+    scoreText.position.y = 10;
+    stage.addChild(scoreText);
+
+    var lifeText = new PIXI.Text("Life: " + life, { font: "28px sans-serif", fill: "maroon", align: "left" });
+    lifeText.position.x = 10;
+    lifeText.position.y = 50;
+    stage.addChild(lifeText);
     
-    var bunnies = [];
-    for (var i = 0; i < 10; i++) {
-        createBunny(Math.random() * window.innerWidth, Math.random() * window.innerHeight)
-    };
+    var enemies = [];
 
-    function createBunny(x, y) {
-        // create our little bunny friend..
-        var bunny = new PIXI.Sprite(texture);
+    // generate first enemy now
+    createEnemy();
 
-        // enable the bunny to be interactive.. this will allow it to respond to mouse and touch events
-        bunny.interactive = true;
+    function createEnemy() {
+        var model = defs[Math.round(Math.random() * (defs.length-1))];
+        console.log("Generating new enemy", model); 
+        // create our little enemy visualization
+        var enemy = new PIXI.Sprite(texture);
+        enemy.model = model;
 
-        // center the bunnys anchor point
-        bunny.anchor.x = 0.5;
-        bunny.anchor.y = 0.5;
+        // enable the enemy to be interactive.. this will allow it to respond to mouse and touch events
+        enemy.interactive = true;
+
+        // center the enemy's anchor point
+        enemy.anchor.x = 0.5;
+        enemy.anchor.y = 0.5;
         // make it a bit bigger, so its easier to touch
-        bunny.scale.x = bunny.scale.y = 1;
+        enemy.scale.x = enemy.scale.y = 0.6;
+        enemy.counter = model.howMany;
+        enemy.status = "comming";
+        if (model.mask) {
+            enemy.mask = Object.create(masks[model.mask]);
+        }
 
-        // use the mousedown and touchstart
-        bunny.mousedown = bunny.touchstart = function(data)
+        // use the mouse-down and touch-start
+        enemy.mousedown = enemy.touchstart = function(data)
         {
             // stop the default event...
             data.originalEvent.preventDefault();
-
-            // store a reference to the data
-            // The reason for this is because of multitouch
-            // we want to track the movement of this particular touch
-            this.data = data;
-            this.alpha = 0.5;
-            this.mask = thing;
-            this.dragging = true;
-        };
-
-        // set the events for when the mouse is released or a touch is released
-        bunny.mouseup = bunny.mouseupoutside = bunny.touchend = bunny.touchendoutside = function(data)
-        {
-            this.alpha = 1
-            this.dragging = false;
-            this.mask = null;
-            // set the interaction data to null
-            this.data = null;
-        };
-
-        // set the callbacks for when the mouse or a touch moves
-        bunny.mousemove = bunny.touchmove = function(data)
-        {
-            if(this.dragging)
-            {
-                var newPosition = this.data.getLocalPosition(this.parent);
-                this.position.x = newPosition.x;
-                this.position.y = newPosition.y;
+            if (this.status !== "dying") {
+                this.status = "dying";
+                this.counter = 100;
+                //this.alpha = 0.5;
+                score++;
+                createEnemy();
             }
-        }
+        };
 
         // move the sprite to its designated position
-        bunny.position.x = x;
-        bunny.position.y = y;
-        bunny.rotation = Math.random() * 30;
+        enemy.position.x = model.x;
+        enemy.position.y = model.y;
+        enemy.rotation = Math.random() * 30;
 
         // add it to the stage
-        stage.addChild(bunny);
-        bunnies.push(bunny);
+        stage.addChild(enemy);
+        enemies.push(enemy);
     }
 
+    var count = 0;
     function animate() {
 
-        for (var i in bunnies) {
-            bunnies[i].rotation += 0.01;
+        var toRemove = null;
+        for (var i in enemies) {
+            enemies[i].rotation += 0.005;
+            if (enemies[i].status === "comming" && enemies[i].counter) {
+                enemies[i].position[enemies[i].model.axis] = enemies[i].position[enemies[i].model.axis] + enemies[i].model.speed;
+                enemies[i].counter--;
+            }
+            if (enemies[i].status === "comming" && !enemies[i].counter) {
+                enemies[i].status = "firing";
+                enemies[i].counter = 100; // fixed value for the moment
+                life--;
+            }
+            if (enemies[i].status === "firing" && enemies[i].counter) {
+                enemies[i].counter--;
+            }
+            if (enemies[i].status === "firing" && !enemies[i].counter) {
+                enemies[i].counter = 100; // fixed value for the moment
+                life--;
+            }
+            if (enemies[i].status === "dying" && enemies[i].counter) {
+                enemies[i].scale.x = enemies[i].scale.y = (enemies[i].scale.x + (enemies[i].counter / 1000));
+                enemies[i].alpha = enemies[i].counter / 100;
+                enemies[i].counter--;
+            }
+            if (enemies[i].status === "dying" && !enemies[i].counter) {
+                toRemove = i;
+            }
         }
+        if (toRemove) {
+            enemies.splice(toRemove, 1);
+        }
+        
+        lifeText.setText("Life: " + life);
+        scoreText.setText("Score: " + score);
 
         // render the stage
         renderer.render(stage);
-        
-        requestAnimFrame(animate);
+
+        if (life < 1) {
+            alert("Smrtak");
+        } else {
+            if ((count / 666) % 0) {
+                createEnemy();
+            }
+            requestAnimFrame(animate);
+        }
+        count++;
     }
 
     requestAnimFrame(animate);
-}, 200);
+}, 200); // this time offset is for proper mobile initialization
 
-	</script>
+</script>
 
-	</body>
+</body>
 </html>
