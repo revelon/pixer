@@ -7,7 +7,7 @@
     body {
         margin: 0;
         padding: 0;
-        background-color: #000;
+        background-color: #666;
     }
 
     .rendererView {
@@ -25,8 +25,12 @@
 
 <script>
 var score = 0;
-var life = 10;
+var life = 100;
 var level = 1;
+var levelEnemiesDone = 0;
+// helping counter for keeping record of number of iterations per level
+var count = 0;
+
 window.setTimeout(function() {
     var viewWidth = 800;
     var viewHeight = 600;
@@ -42,10 +46,26 @@ window.setTimeout(function() {
     var stage = new PIXI.Stage(0xFFFFFF);
 
     // background image - or is CSS background more performant??
-    var bg = PIXI.Sprite.fromImage("background/IMG_1165.JPG");
+    var bg = PIXI.Sprite.fromImage("background/IMG_7713.JPG");
+    PIXI.Texture.fromImage("background/IMG_1165.JPG"); // cache
     bg.width = viewWidth;
     bg.height = viewHeight;
+    stage.interactive = true;
     stage.addChild(bg);
+    
+    // use the mouse-down and touch-start in between levels
+    stage.mousedown = stage.touchstart = function(data) {
+        // stop the default event...
+        data.originalEvent.preventDefault();
+        stage.interactive = false;
+        console.log("Level started");
+        //bg.setTexture = PIXI.Texture.fromFrame(levels[level].poster, false, PIXI.scaleModes.DEFAULT);
+
+        // generate first enemy now
+        createEnemy();
+        // and start animations
+        requestAnimFrame(animate);
+    }
     
     // create a texture from an image path
     var texture = PIXI.Texture.fromImage("gfx/sheep.png");
@@ -57,10 +77,10 @@ window.setTimeout(function() {
     //mask.position.y = 200;
     mask.lineStyle(3, 0x349574, 0.8);
     mask.beginFill(0x8bc5ff, 0.7);
-    mask.moveTo(0,0);
-    mask.lineTo(300,100);
-    mask.lineTo(400,220);
-    mask.lineTo(100,320);
+    mask.moveTo(0, 0);
+    mask.lineTo(300, 100);
+    mask.lineTo(400, 220);
+    mask.lineTo(100, 320);
     stage.addChild(mask);
     masks.sky = mask;
 
@@ -68,59 +88,97 @@ window.setTimeout(function() {
     msk.lineStyle(2, 0x999574, 0.6);
     msk.beginFill(0x8bc566, 0.8);
     msk.moveTo(423, 350);
-    msk.lineTo(432,560);
-    msk.lineTo(200,560);
-    msk.lineTo(200,350);
+    msk.lineTo(432, 560);
+    msk.lineTo(200, 560);
+    msk.lineTo(200, 350);
     stage.addChild(msk);
     masks.house1 = msk;
 
+    // levels and enemies definitions
+    var levels = { 
+        1: {
+                enemiesNo: 10,
+                poster: "background/IMG_1165.JPG",
+                music: "",
+                mask: [
+                ],
+                enemy: [
+                    {x:200, y:-60, axis:"y", speed:0.2, howMany:800, mask:"sky"},
+                    {x:480, y:420, axis:"x", speed:-0.2, howMany:500, mask:"house1"},
+                    {x:880, y:200, axis:"x", speed:-0.4, howMany:500, scale:2},
+                    {x:-80, y:300, axis:"x", speed:0.2, howMany:700},
+                    {x:300, y:660, axis:"y", speed:-0.2, howMany:500}
+                ]
+            },
+        2: {
+                enemiesNo: 20,
+                poster: "background/IMG_1165.JPG",
+                music: "",
+                mask: [
+                ],
+                enemy: [
+                    {x:200, y:-60, axis:"y", speed:0.2, howMany:800, mask:"sky"},
+                    {x:480, y:420, axis:"x", speed:-0.2, howMany:500, mask:"house1"},
+                    {x:880, y:200, axis:"x", speed:-0.4, howMany:500, scale:2},
+                    {x:-80, y:300, axis:"x", speed:0.2, howMany:700},
+                    {x:300, y:660, axis:"y", speed:-0.2, howMany:500}
+                ]
+            }
+    };
+
+    // enemies definitions
     var defs = [
         {x:200, y:-60, axis:"y", speed:0.2, howMany:800, mask:"sky"},
         {x:480, y:420, axis:"x", speed:-0.2, howMany:500, mask:"house1"},
-        {x:880, y:200, axis:"x", speed:-0.2, howMany:500},
+        {x:880, y:200, axis:"x", speed:-0.4, howMany:500, scale:2},
         {x:-80, y:300, axis:"x", speed:0.2, howMany:700},
         {x:300, y:660, axis:"y", speed:-0.2, howMany:500}
     ];
 
-    var scoreText = new PIXI.Text("Score: " + score, { font: "28px sans-serif", fill: "maroon", align: "left" });
+    // mandatory status texts
+    var scoreText = new PIXI.Text("Score: " + score, { font: "20px sans-serif", fill: "blue", align: "left" });
     scoreText.position.x = 10;
     scoreText.position.y = 10;
     stage.addChild(scoreText);
 
-    var lifeText = new PIXI.Text("Life: " + life, { font: "28px sans-serif", fill: "maroon", align: "left" });
+    var lifeText = new PIXI.Text("Life: " + life, { font: "20px sans-serif", fill: "darkgreen", align: "left" });
     lifeText.position.x = 10;
-    lifeText.position.y = 50;
+    lifeText.position.y = 40;
     stage.addChild(lifeText);
     
+    var countText = new PIXI.Text("Count: " + count, { font: "20px sans-serif", fill: "black", align: "left" });
+    countText.position.x = 10;
+    countText.position.y = 70;
+    stage.addChild(countText);
+
+    // enemies collections
     var enemies = [];
 
-    // generate first enemy now
-    createEnemy();
-
     function createEnemy() {
-        var model = defs[Math.round(Math.random() * (defs.length-1))];
+        var model = levels[level].enemy[Math.round(Math.random() * (levels[level].enemy.length-1))];
         console.log("Generating new enemy", model); 
-        // create our little enemy visualization
+        // create enemy visualization
         var enemy = new PIXI.Sprite(texture);
         enemy.model = model;
-
         // enable the enemy to be interactive.. this will allow it to respond to mouse and touch events
         enemy.interactive = true;
 
-        // center the enemy's anchor point
+        // set enemy's anchor point to its centre
         enemy.anchor.x = 0.5;
         enemy.anchor.y = 0.5;
-        // make it a bit bigger, so its easier to touch
-        enemy.scale.x = enemy.scale.y = 0.6;
+        // scale it to proper expected size
+        enemy.scale.x = enemy.scale.y = model.scale || 0.6; // default scale
+        // set counter when will enemy begin fire
         enemy.counter = model.howMany;
+        // and its current status
         enemy.status = "comming";
+        // apply mask, if defined
         if (model.mask) {
             enemy.mask = Object.create(masks[model.mask]);
         }
 
         // use the mouse-down and touch-start
-        enemy.mousedown = enemy.touchstart = function(data)
-        {
+        enemy.mousedown = enemy.touchstart = function(data) {
             // stop the default event...
             data.originalEvent.preventDefault();
             if (this.status !== "dying") {
@@ -132,61 +190,77 @@ window.setTimeout(function() {
             }
         };
 
-        // move the sprite to its designated position
+        // move the sprite to its designated starting position
         enemy.position.x = model.x;
         enemy.position.y = model.y;
-        enemy.rotation = Math.random() * 30;
 
         // add it to the stage
         stage.addChild(enemy);
         enemies.push(enemy);
     }
 
-    var count = 0;
+    // render the stage itself for the first time
+    renderer.render(stage);
+        
+    // main animation loop happens there
     function animate() {
 
+        // flag for killed enemy to re removed in this iteration
         var toRemove = null;
         for (var i in enemies) {
             enemies[i].rotation += 0.005;
-            if (enemies[i].status === "comming" && enemies[i].counter) {
-                enemies[i].position[enemies[i].model.axis] = enemies[i].position[enemies[i].model.axis] + enemies[i].model.speed;
-                enemies[i].counter--;
-            }
-            if (enemies[i].status === "comming" && !enemies[i].counter) {
-                enemies[i].status = "firing";
-                enemies[i].counter = 100; // fixed value for the moment
-                life--;
-            }
-            if (enemies[i].status === "firing" && enemies[i].counter) {
-                enemies[i].counter--;
-            }
-            if (enemies[i].status === "firing" && !enemies[i].counter) {
-                enemies[i].counter = 100; // fixed value for the moment
-                life--;
-            }
-            if (enemies[i].status === "dying" && enemies[i].counter) {
-                enemies[i].scale.x = enemies[i].scale.y = (enemies[i].scale.x + (enemies[i].counter / 1000));
-                enemies[i].alpha = enemies[i].counter / 100;
-                enemies[i].counter--;
-            }
-            if (enemies[i].status === "dying" && !enemies[i].counter) {
-                toRemove = i;
+            if (enemies[i].status === "comming") {
+                if (enemies[i].counter) {
+                    enemies[i].position[enemies[i].model.axis] = enemies[i].position[enemies[i].model.axis] + enemies[i].model.speed;
+                    enemies[i].counter--;
+                } else {
+                    enemies[i].status = "firing";
+                    enemies[i].counter = 100; // fixed value for the moment
+                    life--;
+                }
+            } else if (enemies[i].status === "firing") {
+                 if (enemies[i].counter) {
+                    enemies[i].counter--;
+                } else {
+                    enemies[i].counter = 100; // fixed value for the moment
+                    life--;
+                }
+            } else if (enemies[i].status === "dying") {
+                if (enemies[i].counter) {
+                    enemies[i].scale.x = enemies[i].scale.y = (enemies[i].scale.x + (enemies[i].counter / 1000));
+                    enemies[i].alpha = enemies[i].counter / 100;
+                    enemies[i].counter--;
+                } else {
+                    toRemove = i;
+                    levelEnemiesDone++;
+                }
             }
         }
+        // we have enemy to remove
         if (toRemove) {
             enemies.splice(toRemove, 1);
         }
         
+        // update screen statuses
         lifeText.setText("Life: " + life);
         scoreText.setText("Score: " + score);
+        countText.setText("Count: " + count);
 
-        // render the stage
+        // re-render the stage itself
         renderer.render(stage);
 
+        // check whether to continue animation or not
         if (life < 1) {
-            alert("Smrtak");
+            console.log("Game's end");
+            alert("You're dead, man!");
+        } else if (levelEnemiesDone === levels[level].enemiesNo) {
+            // level done
+            level++;
+            console.log("Level end");
+            stage.interactive = false;
         } else {
-            if ((count / 666) % 0) {
+            // add new enemy here
+            if (!(count % 400)) {
                 createEnemy();
             }
             requestAnimFrame(animate);
@@ -194,7 +268,6 @@ window.setTimeout(function() {
         count++;
     }
 
-    requestAnimFrame(animate);
 }, 200); // this time offset is for proper mobile initialization
 
 </script>
