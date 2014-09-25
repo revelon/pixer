@@ -25,7 +25,7 @@
 
 <script>
 var score = 0;
-var life = 100;
+var life = 50;
 var level = 1;
 var levelEnemiesDone = 0;
 // helping counter for keeping record of number of iterations per level
@@ -47,7 +47,6 @@ window.setTimeout(function() {
 
     // background image - or is CSS background more performant??
     var bg = PIXI.Sprite.fromImage("background/IMG_7713.JPG");
-    PIXI.Texture.fromImage("background/IMG_1165.JPG"); // cache
     bg.width = viewWidth;
     bg.height = viewHeight;
     stage.interactive = true;
@@ -59,7 +58,7 @@ window.setTimeout(function() {
         data.originalEvent.preventDefault();
         stage.interactive = false;
         console.log("Level started");
-        //bg.setTexture = PIXI.Texture.fromFrame(levels[level].poster, false, PIXI.scaleModes.DEFAULT);
+        bg.setTexture(PIXI.Texture.fromImage(levels[level].poster));
 
         // generate first enemy now
         createEnemy();
@@ -126,15 +125,6 @@ window.setTimeout(function() {
             }
     };
 
-    // enemies definitions
-    var defs = [
-        {x:200, y:-60, axis:"y", speed:0.2, howMany:800, mask:"sky"},
-        {x:480, y:420, axis:"x", speed:-0.2, howMany:500, mask:"house1"},
-        {x:880, y:200, axis:"x", speed:-0.4, howMany:500, scale:2},
-        {x:-80, y:300, axis:"x", speed:0.2, howMany:700},
-        {x:300, y:660, axis:"y", speed:-0.2, howMany:500}
-    ];
-
     // mandatory status texts
     var scoreText = new PIXI.Text("Score: " + score, { font: "20px sans-serif", fill: "blue", align: "left" });
     scoreText.position.x = 10;
@@ -153,12 +143,14 @@ window.setTimeout(function() {
 
     // enemies collections
     var enemies = [];
+    var seq = 1;
 
     function createEnemy() {
         var model = levels[level].enemy[Math.round(Math.random() * (levels[level].enemy.length-1))];
-        console.log("Generating new enemy", model); 
+        console.log("Generating new enemy", seq, model); 
         // create enemy visualization
         var enemy = new PIXI.Sprite(texture);
+        enemy.uid = seq++;
         enemy.model = model;
         // enable the enemy to be interactive.. this will allow it to respond to mouse and touch events
         enemy.interactive = true;
@@ -179,20 +171,22 @@ window.setTimeout(function() {
 
         // use the mouse-down and touch-start
         enemy.mousedown = enemy.touchstart = function(data) {
+            console.log("Sprite Click Happened", this.status, this.uid, data);
             // stop the default event...
             data.originalEvent.preventDefault();
             if (this.status !== "dying") {
                 this.status = "dying";
-                this.counter = 100;
+                console.log("Set dying status to UID ", this.uid);
+                this.counter = 100; // fixed dying length
                 //this.alpha = 0.5;
                 score++;
-                createEnemy();
+                createEnemy(); // another
             }
         };
 
         // move the sprite to its designated starting position
-        enemy.position.x = model.x;
-        enemy.position.y = model.y;
+        enemy.position.x = model.x + Math.round(Math.random() * 10);
+        enemy.position.y = model.y + Math.round(Math.random() * 10);
 
         // add it to the stage
         stage.addChild(enemy);
@@ -218,14 +212,16 @@ window.setTimeout(function() {
                     enemies[i].counter = 100; // fixed value for the moment
                     life--;
                 }
-            } else if (enemies[i].status === "firing") {
+            }
+            if (enemies[i].status === "firing") {
                  if (enemies[i].counter) {
                     enemies[i].counter--;
                 } else {
                     enemies[i].counter = 100; // fixed value for the moment
                     life--;
                 }
-            } else if (enemies[i].status === "dying") {
+            }
+            if (enemies[i].status === "dying") {
                 if (enemies[i].counter) {
                     enemies[i].scale.x = enemies[i].scale.y = (enemies[i].scale.x + (enemies[i].counter / 1000));
                     enemies[i].alpha = enemies[i].counter / 100;
@@ -260,7 +256,7 @@ window.setTimeout(function() {
             stage.interactive = false;
         } else {
             // add new enemy here
-            if (!(count % 400)) {
+            if (!(count % 500)) {
                 createEnemy();
             }
             requestAnimFrame(animate);
