@@ -28,10 +28,20 @@ var score = 0;
 var life = 50;
 var level = 1;
 var levelEnemiesDone = 0;
+var running = false;
 // helping counter for keeping record of number of iterations per level
 var count = 0;
 
-window.setTimeout(function() {
+// create an array of assets to load
+var assetsToLoad = ["gfx/sheep.png", "background/IMG_7713.JPG", "background/IMG_1165.JPG", "gfx/fire_ball_png_by_dbszabo1-d515um9.png"];
+// create a new loader
+loader = new PIXI.AssetLoader(assetsToLoad);
+// use callback
+loader.onComplete = goGame;
+//begin load
+loader.load();
+
+function goGame() {
     var viewWidth = 800;
     var viewHeight = 600;
 
@@ -60,8 +70,9 @@ window.setTimeout(function() {
         console.log("Level started");
         bg.setTexture(PIXI.Texture.fromImage(levels[level].poster));
 
-        // generate first enemy now
+        // generate first enemy now and set flag
         createEnemy();
+        running = true;
         // and start animations
         requestAnimFrame(animate);
     }
@@ -146,18 +157,22 @@ window.setTimeout(function() {
     var seq = 1;
 
     function createEnemy() {
+        if (!running) return;
         var model = levels[level].enemy[Math.round(Math.random() * (levels[level].enemy.length-1))];
         console.log("Generating new enemy", seq, model); 
         // create enemy visualization
-        var enemy = new PIXI.Sprite(texture);
+        var enemy = new PIXI.DisplayObjectContainer();
+        var enemyPic = new PIXI.Sprite(texture);
+        enemy.addChild(enemyPic);
+        
         enemy.uid = seq++;
         enemy.model = model;
         // enable the enemy to be interactive.. this will allow it to respond to mouse and touch events
         enemy.interactive = true;
 
         // set enemy's anchor point to its centre
-        enemy.anchor.x = 0.5;
-        enemy.anchor.y = 0.5;
+        enemyPic.anchor.x = 0.5;
+        enemyPic.anchor.y = 0.5;
         // scale it to proper expected size
         enemy.scale.x = enemy.scale.y = model.scale || 0.6; // default scale
         // set counter when will enemy begin fire
@@ -171,13 +186,14 @@ window.setTimeout(function() {
 
         // use the mouse-down and touch-start
         enemy.mousedown = enemy.touchstart = function(data) {
+            if (!running) return;
             console.log("Sprite Click Happened", this.status, this.uid, data);
             // stop the default event...
             data.originalEvent.preventDefault();
             if (this.status !== "dying") {
                 this.status = "dying";
                 console.log("Set dying status to UID ", this.uid);
-                this.counter = 100; // fixed dying length
+                this.counter = 50; // fixed dying length
                 //this.alpha = 0.5;
                 score++;
                 createEnemy(); // another
@@ -198,6 +214,7 @@ window.setTimeout(function() {
         
     // main animation loop happens there
     function animate() {
+        if (!running) return;
 
         // flag for killed enemy to re removed in this iteration
         var toRemove = null;
@@ -211,17 +228,24 @@ window.setTimeout(function() {
                     enemies[i].status = "firing";
                     enemies[i].counter = 100; // fixed value for the moment
                     life--;
+                    if (!enemies[i].fire) {
+                        var fire = PIXI.Sprite.fromImage("gfx/fire_ball_png_by_dbszabo1-d515um9.png");
+                        fire.scale.x = fire.scale.y = 0.2;
+                        fire.anchor.x = fire.anchor.y = 0.5;
+                        enemies[i].addChild(fire);
+                        enemies[i].fire = fire;
+                    }
+                    fire.alpha = 1;
                 }
-            }
-            if (enemies[i].status === "firing") {
+            } else if (enemies[i].status === "firing") {
                  if (enemies[i].counter) {
                     enemies[i].counter--;
+                    enemies[i].fire.alpha = (enemies[i].counter / 200);
                 } else {
                     enemies[i].counter = 100; // fixed value for the moment
                     life--;
                 }
-            }
-            if (enemies[i].status === "dying") {
+            } else if (enemies[i].status === "dying") {
                 if (enemies[i].counter) {
                     enemies[i].scale.x = enemies[i].scale.y = (enemies[i].scale.x + (enemies[i].counter / 1000));
                     enemies[i].alpha = enemies[i].counter / 100;
@@ -234,7 +258,9 @@ window.setTimeout(function() {
         }
         // we have enemy to remove
         if (toRemove) {
+            stage.removeChild(enemies[toRemove]);
             enemies.splice(toRemove, 1);
+            toRemove = null;
         }
         
         // update screen statuses
@@ -242,29 +268,36 @@ window.setTimeout(function() {
         scoreText.setText("Score: " + score);
         countText.setText("Count: " + count);
 
-        // re-render the stage itself
-        renderer.render(stage);
-
         // check whether to continue animation or not
         if (life < 1) {
             console.log("Game's end");
             alert("You're dead, man!");
         } else if (levelEnemiesDone === levels[level].enemiesNo) {
             // level done
+            console.log("Level " + level + " ended");
             level++;
-            console.log("Level end");
-            stage.interactive = false;
+            stage.interactive = true;
+            running = false;
+            for (var i in enemies) {
+                stage.removeChild(enemies[i]);
+            }
+            enemies = [];
         } else {
             // add new enemy here
             if (!(count % 500)) {
                 createEnemy();
             }
-            requestAnimFrame(animate);
+            if (running) {
+                requestAnimFrame(animate);
+            }
         }
+        // re-render the stage itself
+        renderer.render(stage);
+        // and increase counter
         count++;
     }
 
-}, 200); // this time offset is for proper mobile initialization
+}; // this callback/time offset is for proper mobile initialization
 
 </script>
 
