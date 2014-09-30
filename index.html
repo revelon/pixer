@@ -19,6 +19,7 @@
 </style>
 
 <script src="lib/pixi.dev.js"></script>
+<script src="lib/levels.js"></script>
 
 </head>
 <body>
@@ -33,7 +34,25 @@ var running = false;
 var count = 0;
 
 // create an array of assets to load; replace with dynamic loader
-var assetsToLoad = ["gfx/sheep.png", "background/IMG_7713.JPG", "background/IMG_1165.JPG", "gfx/fire_ball_png_by_dbszabo1-d515um9.png", "background/IMG_6210.JPG"];
+var assetsToLoad = []; //["gfx/sheep.png", "background/IMG_7713.JPG", "background/IMG_1165.JPG", "gfx/fire_ball_png_by_dbszabo1-d515um9.png", "background/IMG_6210.JPG", "background/IMG_7259.JPG"];
+
+// collect dynamically all assets necessary to load
+var dedupl = {}
+for (var i in levels) {
+    if (levels.hasOwnProperty(i)) {
+        if (levels[i].poster && !dedupl[levels[i].poster]) {
+            assetsToLoad.push(levels[i].poster);
+            dedupl[levels[i].poster] = 1;
+        }
+        for (var x = 0; x < levels[i].enemy.length; x++) {
+            if (levels[i].enemy[x].texture && !dedupl[levels[i].enemy[x].texture]) {
+                assetsToLoad.push(levels[i].enemy[x].texture);
+                dedupl[levels[i].enemy[x].texture] = 1;
+            }
+        }
+    }
+}
+console.log("assetsToLoad", assetsToLoad);
 // create a new loader
 loader = new PIXI.AssetLoader(assetsToLoad);
 // use callback
@@ -56,7 +75,7 @@ function goGame() {
     var stage = new PIXI.Stage(0xFFFFFF);
 
     // background image - or would CSS background be more performing better?
-    var bg = PIXI.Sprite.fromImage("background/IMG_7713.JPG");
+    var bg = PIXI.Sprite.fromImage("background/IMG_7259.JPG");
     bg.width = viewWidth;
     bg.height = viewHeight;
     stage.interactive = true;
@@ -80,62 +99,23 @@ function goGame() {
     // create a texture from an image path
     var texture = PIXI.Texture.fromImage("gfx/sheep.png");
 
-    var masks = {};
-    // mask
-    var mask = new PIXI.Graphics();
-    //mask.position.x = 200;
-    //mask.position.y = 200;
-    mask.lineStyle(3, 0x349574, 0.8);
-    mask.beginFill(0x8bc5ff, 0.7);
-    mask.moveTo(0, 0);
-    mask.lineTo(300, 100);
-    mask.lineTo(400, 220);
-    mask.lineTo(100, 320);
-    stage.addChild(mask);
-    masks.sky = mask;
-
-    var msk = new PIXI.Graphics();
-    msk.lineStyle(2, 0x999574, 0.6);
-    msk.beginFill(0x8bc566, 0.8);
-    msk.moveTo(423, 350);
-    msk.lineTo(432, 560);
-    msk.lineTo(200, 560);
-    msk.lineTo(200, 350);
-    stage.addChild(msk);
-    masks.house1 = msk;
-
-    // levels and enemies definitions
-    var levels = { 
-        1: {
-                enemiesNo: 5,
-                poster: "background/IMG_1165.JPG",
-                music: "",
-                mask: [
-                ],
-                enemy: [
-                    {x:200, y:-60, axis:"y", speed:0.2, howMany:800, mask:"sky", rotate:-.01},
-                    {x:480, y:420, axis:"x", speed:-0.2, howMany:500, mask:"house1", rotate:-.01},
-                    {x:880, y:200, axis:"x", speed:-0.4, howMany:500, scale:2},
-                    {x:-80, y:300, axis:"x", speed:0.2, howMany:700, rotate:.01},
-                    {x:300, y:660, axis:"y", speed:-0.2, howMany:500, rotate:.01}
-                ]
-            },
-        2: {
-                enemiesNo: 5,
-                poster: "background/IMG_6210.JPG",
-                music: "",
-                mask: [
-                ],
-                enemy: [
-                    {x:200, y:-60, axis:"y", speed:0.2, howMany:800, mask:"sky"},
-                    {x:480, y:420, axis:"x", speed:-0.2, howMany:500, mask:"house1"},
-                    {x:880, y:200, axis:"x", speed:-0.4, howMany:500, scale:2},
-                    {x:-80, y:300, axis:"x", speed:0.2, howMany:700},
-                    {x:300, y:660, axis:"y", speed:-0.2, howMany:500}
-                ]
+    // utility, primary for rendering SVG path based masks
+    function renderPath(data) {
+        var m = new PIXI.Graphics();
+        m.beginFill(0x999955);
+        var points = data.split(" ");
+        for (var i = 0; i < points.length; i++) {
+            var pair = points[i].split(",");
+            if (!i) {
+                m.moveTo(pair[0], pair[1]);
+            } else {
+                m.lineTo(pair[0], pair[1]);
             }
-    };
-
+        }
+        return m;
+    }
+    //stage.addChild(renderPath("283.57143,220.57646 317.85714,219.14789 317.5,267.00504 340.71429,263.79075 342.14286,220.21932 365.35714,221.29075 365.71429,285.21932 366.42857,303.79075 282.85714,301.29075"));
+    
     // mandatory status texts
     var scoreText = new PIXI.Text("Score: " + score, { font: "20px sans-serif", fill: "blue", align: "left" });
     scoreText.position.x = 10;
@@ -162,7 +142,8 @@ function goGame() {
         console.log("Generating new enemy", seq, model); 
         // create enemy visualization
         var enemy = new PIXI.DisplayObjectContainer();
-        var enemyPic = new PIXI.Sprite(texture);
+        var enemyPic = PIXI.Sprite.fromImage(model.texture);
+        // var enemyPic = new PIXI.Sprite(texture);
         enemy.addChild(enemyPic);
         
         enemy.uid = seq++;
@@ -181,7 +162,7 @@ function goGame() {
         enemy.status = "comming";
         // apply mask, if defined
         if (model.mask) {
-            enemy.mask = Object.create(masks[model.mask]);
+            enemy.mask = renderPath(model.mask);
         }
 
         // use the mouse-down and touch-start
@@ -194,9 +175,11 @@ function goGame() {
                 this.status = "dying";
                 console.log("Set dying status to UID ", this.uid);
                 this.counter = 50; // fixed dying length
-                //this.alpha = 0.5;
+                levelEnemiesDone++;
                 score++;
-                createEnemy(); // another
+                if (levelEnemiesDone < levels[level].enemiesNo) {
+                    createEnemy(); // another
+                }
             }
         };
 
@@ -255,7 +238,6 @@ function goGame() {
                     enemies[i].counter--;
                 } else {
                     toRemove = i;
-                    levelEnemiesDone++;
                 }
             }
         }
@@ -275,7 +257,7 @@ function goGame() {
         if (life < 1) {
             console.log("Game's end");
             alert("You're dead, man!");
-        } else if (levelEnemiesDone === levels[level].enemiesNo) {
+        } else if (levelEnemiesDone === levels[level].enemiesNo && !enemies.length) {
             // level done
             console.log("Level " + level + " ended");
             level++;
@@ -289,7 +271,7 @@ function goGame() {
             enemies = [];
         } else {
             // add new enemy here
-            if (!(count % 500)) {
+            if (levelEnemiesDone < levels[level].enemiesNo && !(count % 500)) {
                 createEnemy();
             }
             if (running) {
@@ -302,9 +284,7 @@ function goGame() {
         count++;
     }
 
-} // this callback/time offset is for proper mobile initialization
-
+}
 </script>
-
 </body>
 </html>
