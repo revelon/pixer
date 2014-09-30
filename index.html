@@ -113,11 +113,11 @@ function goGame() {
                 mask: [
                 ],
                 enemy: [
-                    {x:200, y:-60, axis:"y", speed:0.2, howMany:800, mask:"sky"},
-                    {x:480, y:420, axis:"x", speed:-0.2, howMany:500, mask:"house1"},
+                    {x:200, y:-60, axis:"y", speed:0.2, howMany:800, mask:"sky", rotate:-.01},
+                    {x:480, y:420, axis:"x", speed:-0.2, howMany:500, mask:"house1", rotate:-.01},
                     {x:880, y:200, axis:"x", speed:-0.4, howMany:500, scale:2},
-                    {x:-80, y:300, axis:"x", speed:0.2, howMany:700},
-                    {x:300, y:660, axis:"y", speed:-0.2, howMany:500}
+                    {x:-80, y:300, axis:"x", speed:0.2, howMany:700, rotate:.01},
+                    {x:300, y:660, axis:"y", speed:-0.2, howMany:500, rotate:.01}
                 ]
             },
         2: {
@@ -220,10 +220,12 @@ function goGame() {
         var toRemove = null;
         for (var i in enemies) {
             if (!enemies.hasOwnProperty(i)) continue;
-            enemies[i].rotation += 0.005;
+            if (enemies[i].model.rotate) {
+                enemies[i].rotation += enemies[i].model.rotate;
+            }
             if (enemies[i].status === "comming") {
                 if (enemies[i].counter) {
-                    enemies[i].position[enemies[i].model.axis] = enemies[i].position[enemies[i].model.axis] + enemies[i].model.speed;
+                    enemies[i].position[enemies[i].model.axis] += enemies[i].model.speed;
                     enemies[i].counter--;
                 } else {
                     enemies[i].status = "firing";
