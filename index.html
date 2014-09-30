@@ -32,8 +32,8 @@ var running = false;
 // helping counter for keeping record of number of iterations per level
 var count = 0;
 
-// create an array of assets to load
-var assetsToLoad = ["gfx/sheep.png", "background/IMG_7713.JPG", "background/IMG_1165.JPG", "gfx/fire_ball_png_by_dbszabo1-d515um9.png"];
+// create an array of assets to load; replace with dynamic loader
+var assetsToLoad = ["gfx/sheep.png", "background/IMG_7713.JPG", "background/IMG_1165.JPG", "gfx/fire_ball_png_by_dbszabo1-d515um9.png", "background/IMG_6210.JPG"];
 // create a new loader
 loader = new PIXI.AssetLoader(assetsToLoad);
 // use callback
@@ -42,8 +42,8 @@ loader.onComplete = goGame;
 loader.load();
 
 function goGame() {
-    var viewWidth = 800;
-    var viewHeight = 600;
+    var viewWidth = 960;
+    var viewHeight = 540;
 
     // Create a pixi renderer
     var renderer = PIXI.autoDetectRenderer(viewWidth, viewHeight);
@@ -55,7 +55,7 @@ function goGame() {
     // create an new instance of a pixi stage
     var stage = new PIXI.Stage(0xFFFFFF);
 
-    // background image - or is CSS background more performant??
+    // background image - or would CSS background be more performing better?
     var bg = PIXI.Sprite.fromImage("background/IMG_7713.JPG");
     bg.width = viewWidth;
     bg.height = viewHeight;
@@ -75,7 +75,7 @@ function goGame() {
         running = true;
         // and start animations
         requestAnimFrame(animate);
-    }
+    };
     
     // create a texture from an image path
     var texture = PIXI.Texture.fromImage("gfx/sheep.png");
@@ -107,7 +107,7 @@ function goGame() {
     // levels and enemies definitions
     var levels = { 
         1: {
-                enemiesNo: 10,
+                enemiesNo: 5,
                 poster: "background/IMG_1165.JPG",
                 music: "",
                 mask: [
@@ -121,8 +121,8 @@ function goGame() {
                 ]
             },
         2: {
-                enemiesNo: 20,
-                poster: "background/IMG_1165.JPG",
+                enemiesNo: 5,
+                poster: "background/IMG_6210.JPG",
                 music: "",
                 mask: [
                 ],
@@ -219,6 +219,7 @@ function goGame() {
         // flag for killed enemy to re removed in this iteration
         var toRemove = null;
         for (var i in enemies) {
+            if (!enemies.hasOwnProperty(i)) continue;
             enemies[i].rotation += 0.005;
             if (enemies[i].status === "comming") {
                 if (enemies[i].counter) {
@@ -278,8 +279,10 @@ function goGame() {
             level++;
             stage.interactive = true;
             running = false;
-            for (var i in enemies) {
-                stage.removeChild(enemies[i]);
+            for (var x in enemies) {
+                if (enemies.hasOwnProperty(x)) {
+                    stage.removeChild(enemies[x]);
+                }
             }
             enemies = [];
         } else {
@@ -297,7 +300,7 @@ function goGame() {
         count++;
     }
 
-}; // this callback/time offset is for proper mobile initialization
+} // this callback/time offset is for proper mobile initialization
 
 </script>
 
