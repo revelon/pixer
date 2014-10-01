@@ -8,6 +8,7 @@
         margin: 0;
         padding: 0;
         background-color: #666;
+        cursor: crosshair;        
     }
 
     .rendererView {
@@ -17,25 +18,13 @@
         height: 100%;
     }
 </style>
-
 <script src="lib/pixi.dev.js"></script>
 <script src="lib/levels.js"></script>
-
 </head>
 <body>
-
 <script>
-var score = 0;
-var life = 50;
-var level = 1;
-var levelEnemiesDone = 0;
-var running = false;
-// helping counter for keeping record of number of iterations per level
-var count = 0;
-
 // create an array of assets to load; replace with dynamic loader
-var assetsToLoad = []; //["gfx/sheep.png", "background/IMG_7713.JPG", "background/IMG_1165.JPG", "gfx/fire_ball_png_by_dbszabo1-d515um9.png", "background/IMG_6210.JPG", "background/IMG_7259.JPG"];
-
+var assetsToLoad = [];
 // collect dynamically all assets necessary to load
 var dedupl = {}
 for (var i in levels) {
@@ -55,14 +44,25 @@ for (var i in levels) {
 console.log("assetsToLoad", assetsToLoad);
 // create a new loader
 loader = new PIXI.AssetLoader(assetsToLoad);
-// use callback
+// use callback to begin the game itself
 loader.onComplete = goGame;
-//begin load
+//begin assets loading
 loader.load();
 
 function goGame() {
+    var score = 0;
+    var life = 5;
+    var level = 1;
+    var levelEnemiesDone = 0;
+    var running = false;
+    // helping counter for keeping record of number of iterations per level
+    var count = 0;
     var viewWidth = 960;
     var viewHeight = 540;
+    // enemies collections
+    var enemies = [];
+    var last = null;
+    var secondToLast = null;
 
     // Create a pixi renderer
     var renderer = PIXI.autoDetectRenderer(viewWidth, viewHeight);
@@ -86,7 +86,9 @@ function goGame() {
         // stop the default event...
         data.originalEvent.preventDefault();
         stage.interactive = false;
-        console.log("Level started");
+        levelEnemiesDone = 0;
+        stage.removeChild(levelText);
+        console.log("Level " + level + " started");
         bg.setTexture(PIXI.Texture.fromImage(levels[level].poster));
 
         // generate first enemy now and set flag
@@ -114,30 +116,42 @@ function goGame() {
     //stage.addChild(renderPath("283.57143,220.57646 317.85714,219.14789 317.5,267.00504 340.71429,263.79075 342.14286,220.21932 365.35714,221.29075 365.71429,285.21932 366.42857,303.79075 282.85714,301.29075"));
     
     // mandatory status texts
-    var scoreText = new PIXI.Text("Score: " + score, { font: "20px sans-serif", fill: "blue", align: "left" });
+    var scoreText = new PIXI.Text("Score: " + score, { font: "20px sans-serif", fill: "blue" });
     scoreText.position.x = 10;
     scoreText.position.y = 10;
     stage.addChild(scoreText);
 
-    var lifeText = new PIXI.Text("Life: " + life, { font: "20px sans-serif", fill: "darkgreen", align: "left" });
+    var lifeText = new PIXI.Text("Life: " + life, { font: "20px sans-serif", fill: "darkgreen" });
     lifeText.position.x = 10;
     lifeText.position.y = 40;
     stage.addChild(lifeText);
     
-    var countText = new PIXI.Text("Count: " + count, { font: "20px sans-serif", fill: "black", align: "left" });
+    var countText = new PIXI.Text("Count: " + count, { font: "20px sans-serif", fill: "black" });
     countText.position.x = 10;
     countText.position.y = 70;
     stage.addChild(countText);
 
-    // enemies collections
-    var enemies = [];
-
+    var levelText = new PIXI.Text("Level: " + level + " ...tap or click to start...", { font: "42px sans-serif", fill: "maroon", dropShadow: true, align: "center" });
+    levelText.position.x = 220;
+    levelText.position.y = 260;
+    stage.addChild(levelText);
+    
     // render the stage itself for the first time
     renderer.render(stage);
    
     function createEnemy() {
         if (!running || (levelEnemiesDone === levels[level].enemiesNo)) return;
-        var model = levels[level].enemy[Math.round(Math.random() * (levels[level].enemy.length-1))];
+        // select new enemy, to be different than last two selected
+        var selected = false;
+        while (!selected) {
+            var idx = Math.round(Math.random() * (levels[level].enemy.length-1));
+            if (idx !== last && idx !== secondToLast) {
+                selected = true;
+                secondToLast = last;
+                last = idx;
+            }
+        }
+        var model = levels[level].enemy[last];
         console.log("Generating new enemy", model); 
         // create enemy visualization
         var enemy = new PIXI.DisplayObjectContainer();
@@ -247,13 +261,28 @@ function goGame() {
 
         // check whether to continue animation or not
         if (life < 1) {
-            running = false;
             console.log("Game's end");
-            alert("You're dead, man!");
+            levelText.setText("You are dead, your score was: " + score + "\n...tap or click to start...");
+            stage.addChild(levelText);
+            score = 0;
+            life = 5;
+            level = 1;
+            levelEnemiesDone = 0;
+            running = false;
+            count = 0;
+            for (var x in enemies) {
+                if (enemies.hasOwnProperty(x)) {
+                    stage.removeChild(enemies[x]);
+                }
+            }
+            enemies = [];            
+            stage.interactive = true;
         } else if (levelEnemiesDone === levels[level].enemiesNo && !enemies.length) {
             // level done
             console.log("Level " + level + " ended");
             level++;
+            levelText.setText("Level: " + level + " ...tap or click to start...");
+            stage.addChild(levelText);
             stage.interactive = true;
             running = false;
             for (var x in enemies) {
@@ -262,6 +291,7 @@ function goGame() {
                 }
             }
             enemies = [];
+            renderer.render(stage);
         } else {
             // add new enemy here
             if (!(count % 500)) {
