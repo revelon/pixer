@@ -96,9 +96,6 @@ function goGame() {
         requestAnimFrame(animate);
     };
     
-    // create a texture from an image path
-    var texture = PIXI.Texture.fromImage("gfx/sheep.png");
-
     // utility, primary for rendering SVG path based masks
     function renderPath(data) {
         var m = new PIXI.Graphics();
@@ -134,19 +131,19 @@ function goGame() {
 
     // enemies collections
     var enemies = [];
-    var seq = 1;
 
+    // render the stage itself for the first time
+    renderer.render(stage);
+   
     function createEnemy() {
-        if (!running) return;
+        if (!running || (levelEnemiesDone === levels[level].enemiesNo)) return;
         var model = levels[level].enemy[Math.round(Math.random() * (levels[level].enemy.length-1))];
-        console.log("Generating new enemy", seq, model); 
+        console.log("Generating new enemy", model); 
         // create enemy visualization
         var enemy = new PIXI.DisplayObjectContainer();
         var enemyPic = PIXI.Sprite.fromImage(model.texture);
-        // var enemyPic = new PIXI.Sprite(texture);
         enemy.addChild(enemyPic);
         
-        enemy.uid = seq++;
         enemy.model = model;
         // enable the enemy to be interactive.. this will allow it to respond to mouse and touch events
         enemy.interactive = true;
@@ -168,33 +165,28 @@ function goGame() {
         // use the mouse-down and touch-start
         enemy.mousedown = enemy.touchstart = function(data) {
             if (!running) return;
-            console.log("Sprite Click Happened", this.status, this.uid, data);
+            console.log("Sprite Click Happened", this.status, data);
             // stop the default event...
             data.originalEvent.preventDefault();
             if (this.status !== "dying") {
                 this.status = "dying";
-                console.log("Set dying status to UID ", this.uid);
                 this.counter = 50; // fixed dying length
-                levelEnemiesDone++;
                 score++;
-                if (levelEnemiesDone < levels[level].enemiesNo) {
-                    createEnemy(); // another
-                }
+                createEnemy(); // another
             }
         };
 
-        // move the sprite to its designated starting position
+        // move the sprite to its designated starting position with only slight variation, change it!
         enemy.position.x = model.x + Math.round(Math.random() * 10);
         enemy.position.y = model.y + Math.round(Math.random() * 10);
 
         // add it to the stage
         stage.addChild(enemy);
         enemies.push(enemy);
+        levelEnemiesDone++;
     }
 
-    // render the stage itself for the first time
-    renderer.render(stage);
-        
+
     // main animation loop happens there
     function animate() {
         if (!running) return;
@@ -255,6 +247,7 @@ function goGame() {
 
         // check whether to continue animation or not
         if (life < 1) {
+            running = false;
             console.log("Game's end");
             alert("You're dead, man!");
         } else if (levelEnemiesDone === levels[level].enemiesNo && !enemies.length) {
@@ -271,7 +264,7 @@ function goGame() {
             enemies = [];
         } else {
             // add new enemy here
-            if (levelEnemiesDone < levels[level].enemiesNo && !(count % 500)) {
+            if (!(count % 500)) {
                 createEnemy();
             }
             if (running) {
