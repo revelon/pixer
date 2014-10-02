@@ -51,7 +51,7 @@ loader.load();
 
 function goGame() {
     var score = 0;
-    var life = 5;
+    var life = 10;
     var level = 1;
     var levelEnemiesDone = 0;
     var running = false;
@@ -74,8 +74,8 @@ function goGame() {
     // create an new instance of a pixi stage
     var stage = new PIXI.Stage(0xFFFFFF);
 
-    // background image - or would CSS background be more performing better?
-    var bg = PIXI.Sprite.fromImage("background/IMG_7259.JPG");
+    // background image
+    var bg = PIXI.Sprite.fromImage("background/vaison-la-romaine.JPG");
     bg.width = viewWidth;
     bg.height = viewHeight;
     stage.interactive = true;
@@ -113,8 +113,106 @@ function goGame() {
         }
         return m;
     }
-    //stage.addChild(renderPath("283.57143,220.57646 317.85714,219.14789 317.5,267.00504 340.71429,263.79075 342.14286,220.21932 365.35714,221.29075 365.71429,285.21932 366.42857,303.79075 282.85714,301.29075"));
-    
+    // path coord tester
+    /*
+    // stena vpravo nahore
+    stage.addChild(renderPath("813.92857,-6.4285714 807.85714,17.857143 803.57143,31.071429 809.28571,43.571429 816.07143,52.857143 825.35714,61.428571 846.42857,58.214286 868.92857,56.071429 875,50.357143 884.64286,45.714286 895.35714,43.571429 903.57143,43.214286 911.07143,38.571429 920,36.785714 926.78571,-3.5714286"));
+    var a1 = PIXI.Sprite.fromImage("gfx/sheep.png");
+    a1.scale.x = a1.scale.y = 0.4;
+    a1.position.x = 830; a1.position.y = 50;
+    stage.addChild(a1);
+    //{id:"a1", x:830, y:50, axis:"y", speed:-0.4, howMany:50, scale:0.4, texture:"gfx/sheep.png"},
+    // stena vpravo nahore mirne nalevo
+    stage.addChild(renderPath("606.07143,152.5 649.28571,109.64286 606.07143,71.428571 561.07143,117.14286"));
+    var a2 = PIXI.Sprite.fromImage("gfx/sheep.png");
+    a2.scale.x = a2.scale.y = 0.4;
+    a2.position.x = 590; a2.position.y = 130;
+    stage.addChild(a2);
+    //{id:"a2", x:590, y:130, axis:"y", speed:-0.4, howMany:50, scale:0.4, texture:"gfx/sheep.png"},
+    // okno vez napravo
+    stage.addChild(renderPath("520,176.42857 523.92857,204.28571 540.71429,201.78571 536.42857,172.14286 523.92857,172.5"));
+    var a3 = PIXI.Sprite.fromImage("gfx/sheep.png");
+    a3.scale.x = a3.scale.y = 0.2;
+    a3.position.x = 490; a3.position.y = 170;    
+    stage.addChild(a3);
+    //{id:"a3", x:510, y:200, axis:"y", speed:0.4, howMany:50, scale:0.2, texture:"gfx/sheep.png"},
+    // zed vpravo zboku
+    stage.addChild(renderPath("622.14286,303.92857 631.42857,361.07143 638.21429,366.42857 631.42857,372.85714 631.07143,384.64286 602.5,388.57143 572.14286,348.92857 580,309.28571"));
+    var a4 = PIXI.Sprite.fromImage("gfx/sheep.png");
+    a4.scale.x = a4.scale.y = 0.6;
+    a4.position.x = 620; a4.position.y = 285;
+    stage.addChild(a4);
+    //{id:"a4", x:620, y:285, axis:"x", speed:-0.4, howMany:50, scale:0.6, texture:"gfx/sheep.png"},
+    // kanal
+    stage.addChild(renderPath("318.21429,487.14286 321.42857,492.5 338.92857,494.28571 356.78571,493.21429 373.92857,489.64286 383.21429,485 383.92857,479.28571 387.85714,424.64286 295.71429,425.35714"));
+    var a5 = PIXI.Sprite.fromImage("gfx/sheep.png");
+    a5.scale.x = a5.scale.y = 0.5;
+    a5.position.x = 310; a5.position.y = 480;    
+    stage.addChild(a5);
+    //{id:"a5", x:310, y:480, axis:"y", speed:-0.4, howMany:50, scale:0.5, texture:"gfx/sheep.png"},
+    // okno nade dvermi
+    stage.addChild(renderPath("318.92857,221.07143 317.5,266.07143 340.71429,262.5 342.14286,216.42857 331.07143,216.07143"));
+    var a6 = PIXI.Sprite.fromImage("gfx/sheep.png");
+    a6.scale.x = a6.scale.y = 0.25;
+    a6.position.x = 310; a6.position.y = 260;    
+    stage.addChild(a6);
+    //{id:"a6", x:310, y:260, axis:"y", speed:-0.4, howMany:50, scale:0.25, texture:"gfx/sheep.png"},
+    // okno v kulate vezi
+    stage.addChild(renderPath("462.85714,239.64286 464.28571,266.07143 481.07143,265.71429 477.85714,239.64286"));
+    var a7 = PIXI.Sprite.fromImage("gfx/sheep.png");
+    a7.scale.x = a7.scale.y = 0.2;
+    a7.position.x = 480; a7.position.y = 235;
+    stage.addChild(a7);
+    //{id:"a7", x:480, y:235, axis:"x", speed:-0.4, howMany:50, scale:0.2, texture:"gfx/sheep.png"},
+    // strecha kostela mirne vpravo
+    stage.addChild(renderPath("348.92857,146.42857 399.64286,150 410.35714,98.571429 346.42857,96.785714"));
+    var a8 = PIXI.Sprite.fromImage("gfx/sheep.png");
+    a8.scale.x = a8.scale.y = 0.3;
+    a8.position.x = 350; a8.position.y = 140;
+    stage.addChild(a8);
+    //{id:"a8", x:350, y:140, axis:"y", speed:-0.4, howMany:50, scale:0.3, texture:"gfx/sheep.png"},
+    // strecha kostela mirne vlevo
+    stage.addChild(renderPath("275.35714,175.35714 311.78571,153.57143 307.5,114.28571 259.64286,121.42857"));
+    var a9 = PIXI.Sprite.fromImage("gfx/sheep.png");
+    a9.scale.x = a9.scale.y = 0.25;
+    a9.position.x = 275; a9.position.y = 160;    
+    stage.addChild(a9);
+    //{id:"a9", x:275, y:160, axis:"y", speed:-0.4, howMany:50, scale:0.25, texture:"gfx/sheep.png"},
+    // zed vlevo zboku
+    stage.addChild(renderPath("202.5,359.28571 195.71429,415.71429 240,415 251.42857,342.85714"));
+    var a10 = PIXI.Sprite.fromImage("gfx/sheep.png");
+    a10.scale.x = a10.scale.y = 0.4;
+    a10.position.x = 140; a10.position.y = 350;    
+    stage.addChild(a10);
+    //{id:"a10", x:140, y:350, axis:"x", speed:0.4, howMany:50, scale:0.4, texture:"gfx/sheep.png"},
+    // okno vlevo nahore
+    stage.addChild(renderPath("186.07143,203.21429 178.92857,246.42857 208.92857,249.64286 221.07143,205"));
+    var a11 = PIXI.Sprite.fromImage("gfx/sheep.png");
+    a11.scale.x = a11.scale.y = 0.3;
+    a11.position.x = 135; a11.position.y = 195;    
+    stage.addChild(a11);
+    //{id:"a11", x:135, y:195, axis:"x", speed:0.4, howMany:50, scale:0.4, texture:"gfx/sheep.png"},
+    // okno vlevo dole
+    stage.addChild(renderPath("121.42857,303.92857 103.57143,386.42857 152.5,389.28571 175.35714,308.92857"));
+    var a12 = PIXI.Sprite.fromImage("gfx/sheep.png");
+    a12.scale.x = a12.scale.y = 0.6;
+    a12.position.x = 20; a12.position.y = 280;
+    stage.addChild(a12);
+    //{id:"a12", x:20, y:280, axis:"x", speed:0.4, howMany:50, scale:0.6, texture:"gfx/sheep.png"},
+    // strecha veze vpravo
+    stage.addChild(renderPath("495.71429,159.64286 514.28571,155 522.14286,116.78571 478.21429,129.64286"));
+    var a13 = PIXI.Sprite.fromImage("gfx/sheep.png");
+    a13.scale.x = a13.scale.y = 0.2;
+    a13.position.x = 485; a13.position.y = 155;    
+    stage.addChild(a13);
+    //{id:"a13", x:485, y:155, axis:"y", speed:-0.4, howMany:50, scale:0.2, texture:"gfx/sheep.png"},
+
+    var a14 = PIXI.Sprite.fromImage("gfx/sheep.png");
+    a14.scale.x = a14.scale.y = 1.2;
+    a14.position.x = 460; a14.position.y = 350;
+    stage.addChild(a14);
+    //{id:"a14", x:460, y:545, axis:"y", speed:-0.6, howMany:50, scale:1.2, texture:"gfx/sheep.png"},
+    */
     // mandatory status texts
     var scoreText = new PIXI.Text("Score: " + score, { font: "20px sans-serif", fill: "blue" });
     scoreText.position.x = 10;
@@ -240,6 +338,7 @@ function goGame() {
             } else if (enemies[i].status === "dying") {
                 if (enemies[i].counter) {
                     enemies[i].scale.x = enemies[i].scale.y = (enemies[i].scale.x + (enemies[i].counter / 1000));
+                    enemies[i].mask = null;
                     enemies[i].alpha = enemies[i].counter / 100;
                     enemies[i].counter--;
                 } else {
