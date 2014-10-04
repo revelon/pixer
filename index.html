@@ -24,7 +24,7 @@
 <body>
 <script>
 // create an array of assets to load; replace with dynamic loader
-var assetsToLoad = [];
+var assetsToLoad = ["background/calanques.jpg", "background/camarque.jpg", "gfx/fire.png"];
 // collect dynamically all assets necessary to load
 var dedupl = {}
 for (var i in levels) {
@@ -75,7 +75,7 @@ function goGame() {
     var stage = new PIXI.Stage(0xFFFFFF);
 
     // background image
-    var bg = PIXI.Sprite.fromImage("background/vaison-la-romaine.JPG");
+    var bg = PIXI.Sprite.fromImage("background/vaison-la-romaine2.jpg");
     bg.width = viewWidth;
     bg.height = viewHeight;
     stage.interactive = true;
@@ -136,8 +136,8 @@ function goGame() {
     stage.addChild(levelText);
 
     // path coordination tester
-    for (var c = 0; c < levels[1].enemy.length; c++) {
-        stage.addChild(renderPath(levels[1].enemy[c].mask));
+    for (var c = 0; c < levels[3].enemy.length; c++) {
+        stage.addChild(renderPath(levels[3].enemy[c].mask));
     }
     
     // render the stage itself for the first time
@@ -225,8 +225,8 @@ function goGame() {
                     enemies[i].counter = 100; // fixed value for the moment
                     life--;
                     if (!enemies[i].fire) {
-                        var fire = PIXI.Sprite.fromImage("gfx/fire_ball_png_by_dbszabo1-d515um9.png");
-                        fire.scale.x = fire.scale.y = 0.2;
+                        var fire = PIXI.Sprite.fromImage("gfx/fire.png");
+                        fire.scale.x = fire.scale.y = 2.2;
                         fire.anchor.x = fire.anchor.y = 0.5;
                         enemies[i].addChild(fire);
                         enemies[i].fire = fire;
@@ -296,7 +296,6 @@ function goGame() {
                 }
             }
             enemies = [];
-            renderer.render(stage);
         } else {
             // add new enemy here
             if (!(count % 500)) {
