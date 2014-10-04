@@ -136,14 +136,16 @@ function goGame() {
     // path coordination tester / level designer tool
     var lvl = 0;
     if (lvl) {
-      for (var c = 0; c < levels[lvl].enemy.length; c++) {
-          stage.addChild(renderPath(levels[lvl].enemy[c].mask));
-          var xx = PIXI.Sprite.fromImage(levels[lvl].enemy[c].texture);
-          xx.position.x = levels[lvl].enemy[c].x;
-          xx.position.y = levels[lvl].enemy[c].y;
-          xx.scale.x = xx.scale.y = levels[lvl].enemy[c].scale;
-          //stage.addChild(xx);
-      }
+        for (var c = 0; c < levels[lvl].enemy.length; c++) {
+            var msk = renderPath(levels[lvl].enemy[c].mask);
+            msk.alpha = 0.4;
+            stage.addChild(msk);
+            var xx = PIXI.Sprite.fromImage(levels[lvl].enemy[c].texture);
+            xx.position.x = levels[lvl].enemy[c].x;
+            xx.position.y = levels[lvl].enemy[c].y;
+            xx.scale.x = xx.scale.y = levels[lvl].enemy[c].scale;
+            //stage.addChild(xx);
+        }
     }
     
     // render the stage itself for the first time
@@ -243,7 +245,7 @@ function goGame() {
             } else if (enemies[i].status === "firing") {
                  if (enemies[i].counter) {
                     enemies[i].counter--;
-                    enemies[i].fire.alpha = (enemies[i].counter / 200);
+                    enemies[i].fire.alpha = (enemies[i].counter / 150);
                 } else {
                     enemies[i].counter = 100; // fixed value for the moment
                     life--;
