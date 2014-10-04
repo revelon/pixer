@@ -52,7 +52,7 @@ loader.load();
 function goGame() {
     var score = 0;
     var life = 10;
-    var level = 3;
+    var level = 2;
     var levelEnemiesDone = 0;
     var running = false;
     // helping counter for keeping record of number of iterations per level
@@ -75,7 +75,7 @@ function goGame() {
     var stage = new PIXI.Stage(0xFFFFFF);
 
     // background image
-    var bg = PIXI.Sprite.fromImage("background/vaison-la-romaine2.jpg");
+    var bg = PIXI.Sprite.fromImage("background/pont-du-gard.jpg");
     stage.interactive = true;
     stage.addChild(bg);
     
@@ -134,7 +134,7 @@ function goGame() {
     stage.addChild(levelText);
 
     // path coordination tester / level designer tool
-    var lvl = 0;
+    var lvl = 2;
     if (lvl) {
         for (var c = 0; c < levels[lvl].enemy.length; c++) {
             var msk = renderPath(levels[lvl].enemy[c].mask);
@@ -163,7 +163,7 @@ function goGame() {
                 last = idx;
             }
         }
-        var model = levels[level].enemy[last];
+        var model = levels[level].enemy[6];
         console.log("Generating new enemy", model); 
         // create enemy visualization
         var enemy = new PIXI.DisplayObjectContainer();
@@ -186,7 +186,7 @@ function goGame() {
         enemy.status = "comming";
         // apply mask, if defined
         if (model.mask) {
-            enemy.mask = renderPath(model.mask);
+            //enemy.mask = renderPath(model.mask);
         }
 
         // use the mouse-down and touch-start
