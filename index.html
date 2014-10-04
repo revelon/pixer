@@ -52,7 +52,7 @@ loader.load();
 function goGame() {
     var score = 0;
     var life = 10;
-    var level = 1;
+    var level = 3;
     var levelEnemiesDone = 0;
     var running = false;
     // helping counter for keeping record of number of iterations per level
@@ -76,8 +76,6 @@ function goGame() {
 
     // background image
     var bg = PIXI.Sprite.fromImage("background/vaison-la-romaine2.jpg");
-    bg.width = viewWidth;
-    bg.height = viewHeight;
     stage.interactive = true;
     stage.addChild(bg);
     
@@ -135,9 +133,17 @@ function goGame() {
     levelText.position.y = 260;
     stage.addChild(levelText);
 
-    // path coordination tester
-    for (var c = 0; c < levels[3].enemy.length; c++) {
-        stage.addChild(renderPath(levels[3].enemy[c].mask));
+    // path coordination tester / level designer tool
+    var lvl = 0;
+    if (lvl) {
+      for (var c = 0; c < levels[lvl].enemy.length; c++) {
+          stage.addChild(renderPath(levels[lvl].enemy[c].mask));
+          var xx = PIXI.Sprite.fromImage(levels[lvl].enemy[c].texture);
+          xx.position.x = levels[lvl].enemy[c].x;
+          xx.position.y = levels[lvl].enemy[c].y;
+          xx.scale.x = xx.scale.y = levels[lvl].enemy[c].scale;
+          //stage.addChild(xx);
+      }
     }
     
     // render the stage itself for the first time
@@ -170,7 +176,8 @@ function goGame() {
         enemyPic.anchor.x = 0.5;
         enemyPic.anchor.y = 0.5;
         // scale it to proper expected size
-        enemy.scale.x = enemy.scale.y = model.scale || 0.6; // default scale
+        enemy.scale.x = model.scale; // allow optional horizontal flipping of the texture
+        enemy.scale.y = Math.abs(model.scale); // but not vertical one
         // set counter when will enemy begin fire
         enemy.counter = model.howMany;
         // and its current status
@@ -225,8 +232,8 @@ function goGame() {
                     enemies[i].counter = 100; // fixed value for the moment
                     life--;
                     if (!enemies[i].fire) {
-                        var fire = PIXI.Sprite.fromImage("gfx/fire.png");
-                        fire.scale.x = fire.scale.y = 2.2;
+                        var fire = PIXI.Sprite.fromImage("gfx/water-splash.png");
+                        fire.scale.x = fire.scale.y = 0.4;
                         fire.anchor.x = fire.anchor.y = 0.5;
                         enemies[i].addChild(fire);
                         enemies[i].fire = fire;
