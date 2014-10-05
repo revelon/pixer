@@ -18,13 +18,14 @@
         height: 100%;
     }
 </style>
+<script src="lib/howler.js"></script>
 <script src="lib/pixi.dev.js"></script>
 <script src="lib/levels.js"></script>
 </head>
 <body>
 <script>
 // create an array of assets to load; replace with dynamic loader
-var assetsToLoad = ["background/calanques.jpg", "background/camarque.jpg", "gfx/fire.png"];
+var assetsToLoad = ["background/calanques.jpg", "background/camarque.jpg", "gfx/water-splash.png"];
 // collect dynamically all assets necessary to load
 var dedupl = {}
 for (var i in levels) {
@@ -48,6 +49,14 @@ loader = new PIXI.AssetLoader(assetsToLoad);
 loader.onComplete = goGame;
 //begin assets loading
 loader.load();
+
+var music = new Howl({
+  urls: ["sfx/sb-16-40.mp3"],
+  autoplay: true,
+  buffer: true,
+  loop: true,
+  volume: 0.2
+});
 
 function goGame() {
     var score = 0;
@@ -75,7 +84,7 @@ function goGame() {
     var stage = new PIXI.Stage(0xFFFFFF);
 
     // background image
-    var bg = PIXI.Sprite.fromImage("background/vaison-la-romaine2.jpg");
+    var bg = PIXI.Sprite.fromImage("background/calanques.jpg" );
     stage.interactive = true;
     stage.addChild(bg);
     
@@ -199,6 +208,7 @@ function goGame() {
                 this.status = "dying";
                 this.counter = 50; // fixed dying length
                 score++;
+                new Howl({urls:[levels[level].sfx]}).play();
                 createEnemy(); // another
             }
         };
@@ -235,10 +245,11 @@ function goGame() {
                     life--;
                     if (!enemies[i].fire) {
                         var fire = PIXI.Sprite.fromImage("gfx/water-splash.png");
-                        fire.scale.x = fire.scale.y = 0.4;
+                        fire.scale.x = fire.scale.y = 0.44;
                         fire.anchor.x = fire.anchor.y = 0.5;
                         enemies[i].addChild(fire);
                         enemies[i].fire = fire;
+                        new Howl({urls:["sfx/186748__rombart__splash-eau-goudron1.mp3"]}).play();
                     }
                     fire.alpha = 1;
                 }
@@ -252,15 +263,19 @@ function goGame() {
                 }
             } else if (enemies[i].status === "dying") {
                 if (enemies[i].counter) {
-                    if (enemies[i].model.scale < 0) {
-                        enemies[i].scale.x -= (enemies[i].counter / 1000);
+                    if (levels[level].dieStyle) {
+                        enemies[i].position.y += 2;
                     } else {
-                        enemies[i].scale.x += (enemies[i].counter / 1000);
+                        if (enemies[i].model.scale < 0) {
+                            enemies[i].scale.x -= (enemies[i].counter / 1000);
+                        } else {
+                            enemies[i].scale.x += (enemies[i].counter / 1000);
+                        }
+                        enemies[i].scale.y = (enemies[i].scale.y + (enemies[i].counter / 1000));
+                        enemies[i].mask = null;
+                        enemies[i].rotation += 0.2;
                     }
-                    enemies[i].scale.y = (enemies[i].scale.y + (enemies[i].counter / 1000));
-                    enemies[i].mask = null;
                     enemies[i].alpha = enemies[i].counter / 100;
-                    enemies[i].rotation += 0.2;
                     enemies[i].counter--;
                 } else {
                     toRemove = i;
@@ -283,6 +298,7 @@ function goGame() {
         if (life < 1) {
             console.log("Game's end");
             levelText.setText("You are dead, your score was: " + score + "\n...tap or click to start...");
+            bg.setTexture(PIXI.Texture.fromImage("background/camarque.jpg"));
             stage.addChild(levelText);
             score = 0;
             life = 5;
