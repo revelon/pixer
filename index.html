@@ -134,7 +134,7 @@ function goGame() {
     stage.addChild(levelText);
 
     // path coordination tester / level designer tool
-    var lvl = 2;
+    var lvl = 0;
     if (lvl) {
         for (var c = 0; c < levels[lvl].enemy.length; c++) {
             var msk = renderPath(levels[lvl].enemy[c].mask);
@@ -163,7 +163,7 @@ function goGame() {
                 last = idx;
             }
         }
-        var model = levels[level].enemy[6];
+        var model = levels[level].enemy[last];
         console.log("Generating new enemy", model); 
         // create enemy visualization
         var enemy = new PIXI.DisplayObjectContainer();
@@ -186,7 +186,7 @@ function goGame() {
         enemy.status = "comming";
         // apply mask, if defined
         if (model.mask) {
-            //enemy.mask = renderPath(model.mask);
+            enemy.mask = renderPath(model.mask);
         }
 
         // use the mouse-down and touch-start
@@ -252,7 +252,12 @@ function goGame() {
                 }
             } else if (enemies[i].status === "dying") {
                 if (enemies[i].counter) {
-                    enemies[i].scale.x = enemies[i].scale.y = (enemies[i].scale.x + (enemies[i].counter / 1000));
+                    if (enemies[i].model.scale < 0) {
+                        enemies[i].scale.x -= (enemies[i].counter / 1000);
+                    } else {
+                        enemies[i].scale.x += (enemies[i].counter / 1000);
+                    }
+                    enemies[i].scale.y = (enemies[i].scale.y + (enemies[i].counter / 1000));
                     enemies[i].mask = null;
                     enemies[i].alpha = enemies[i].counter / 100;
                     enemies[i].counter--;
