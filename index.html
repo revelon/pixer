@@ -25,7 +25,7 @@
 <body>
 <script>
 // create an array of assets to load
-var assetsToLoad = ["background/calanques.jpg", "background/camarque.jpg", "gfx/water-splash.png"];
+var assetsToLoad = ["background/calanques.jpg", "background/camarque.jpg", "gfx/water-splash.png", "gfx/music-256.png"];
 var sfxAssets = ["sfx/sb-16-40.mp3"];
 // collect dynamically all assets necessary to load
 var dedupl = {}
@@ -61,7 +61,7 @@ for (var i in sfxAssets) {
 
 function goGame() {
     var score = 0;
-    var life = 10;
+    var life = 20;
     var level = 1;
     var levelEnemiesDone = 0;
     var running = false;
@@ -103,6 +103,7 @@ function goGame() {
     stage.mousedown = stage.touchstart = function(data) {
         // stop the default event...
         data.originalEvent.preventDefault();
+        console.log(data);
         stage.interactive = false;
         levelEnemiesDone = 0;
         stage.removeChild(levelText);
@@ -132,6 +133,28 @@ function goGame() {
         return m;
     }
 
+    // sound control
+    var snd = PIXI.Sprite.fromImage("gfx/music-256.png");
+    snd.position.x = 910; snd.position.y = 15;
+    snd.scale.x = 0.15; snd.scale.y = 0.2;
+    snd.interactive = true;
+    snd.soundControl = true;
+    stage.addChild(snd);
+    // use the mouse-down and touch-start
+    snd.mousedown = snd.touchstart = function(data) {
+        // stop the default event...
+        data.originalEvent.preventDefault();
+        if (music) {
+            music = false;
+            Howler.mute();
+            snd.alpha = 0.5;
+        } else {
+            music = true;
+            Howler.unmute();
+            snd.alpha = 1;
+        }
+    };
+    
     // mandatory status texts
     var scoreText = new PIXI.Text("Score: " + score, { font: "20px sans-serif", fill: "blue" });
     scoreText.position.x = 10;
@@ -219,7 +242,7 @@ function goGame() {
                 this.status = "dying";
                 this.counter = 50; // fixed dying length
                 score++;
-                new Howl({urls:[levels[level].sfx][(Math.round(Math.random()*20)%2==0?1:0)], 
+                new Howl({urls:[levels[level].sfx[(Math.round(Math.random()*20)%2==0?1:0)]], 
                     volume:(Math.round(Math.random()*4+1)/5)}).play();
                 createEnemy(); // another
             }
