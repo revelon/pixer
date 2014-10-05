@@ -11,7 +11,7 @@
   "icons": {
     "128": "/icons/ico128.png",
     "64": "/icons/ico64.png",
-    "32": "/icons/32.png",
+    "32": "/icons/32.png"
   },
   "orientation": "landscape-primary",
   "fullscreen": "true"

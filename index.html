@@ -101,20 +101,24 @@ function goGame() {
     
     // use the mouse-down and touch-start in between levels
     stage.mousedown = stage.touchstart = function(data) {
+        console.log("Stage event", data);
         // stop the default event...
         data.originalEvent.preventDefault();
-        console.log(data);
-        stage.interactive = false;
-        levelEnemiesDone = 0;
-        stage.removeChild(levelText);
-        console.log("Level " + level + " started");
-        bg.setTexture(PIXI.Texture.fromImage(levels[level].poster));
+        if (data.target.soundControl) {
+            // xxx
+        } else {
+            stage.interactive = false;
+            levelEnemiesDone = 0;
+            stage.removeChild(levelText);
+            console.log("Level " + level + " started");
+            bg.setTexture(PIXI.Texture.fromImage(levels[level].poster));
 
-        // generate first enemy now and set flag
-        createEnemy();
-        running = true;
-        // and start animations
-        requestAnimFrame(animate);
+            // generate first enemy now and set flag
+            createEnemy();
+            running = true;
+            // and start animations
+            requestAnimFrame(animate);
+        }
     };
     
     // utility, primary for rendering SVG path based masks
@@ -143,6 +147,7 @@ function goGame() {
     // use the mouse-down and touch-start
     snd.mousedown = snd.touchstart = function(data) {
         // stop the default event...
+        console.log("Sound event", data);
         data.originalEvent.preventDefault();
         if (music) {
             music = false;
@@ -336,7 +341,7 @@ function goGame() {
             bg.setTexture(PIXI.Texture.fromImage("background/camarque.jpg"));
             stage.addChild(levelText);
             score = 0;
-            life = 5;
+            life = 20;
             level = 1;
             levelEnemiesDone = 0;
             running = false;
@@ -353,6 +358,7 @@ function goGame() {
             console.log("Level " + level + " ended");
             level++;
             levelText.setText("Level: " + level + " ...tap or click to start...");
+            bg.setTexture(PIXI.Texture.fromImage("background/calanques.jpg"));
             stage.addChild(levelText);
             stage.interactive = true;
             running = false;
@@ -364,7 +370,7 @@ function goGame() {
             enemies = [];
         } else {
             // add new enemy here
-            if (!(count % 500)) {
+            if (!(count % 400)) {
                 createEnemy();
             }
             if (running) {
