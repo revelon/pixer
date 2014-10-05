@@ -52,7 +52,7 @@ loader.load();
 function goGame() {
     var score = 0;
     var life = 10;
-    var level = 2;
+    var level = 1;
     var levelEnemiesDone = 0;
     var running = false;
     // helping counter for keeping record of number of iterations per level
@@ -75,7 +75,7 @@ function goGame() {
     var stage = new PIXI.Stage(0xFFFFFF);
 
     // background image
-    var bg = PIXI.Sprite.fromImage("background/pont-du-gard.jpg");
+    var bg = PIXI.Sprite.fromImage("background/vaison-la-romaine2.jpg");
     stage.interactive = true;
     stage.addChild(bg);
     
@@ -138,7 +138,7 @@ function goGame() {
     if (lvl) {
         for (var c = 0; c < levels[lvl].enemy.length; c++) {
             var msk = renderPath(levels[lvl].enemy[c].mask);
-            msk.alpha = 0.4;
+            msk.alpha = 0.5;
             stage.addChild(msk);
             var xx = PIXI.Sprite.fromImage(levels[lvl].enemy[c].texture);
             xx.position.x = levels[lvl].enemy[c].x;
@@ -260,6 +260,7 @@ function goGame() {
                     enemies[i].scale.y = (enemies[i].scale.y + (enemies[i].counter / 1000));
                     enemies[i].mask = null;
                     enemies[i].alpha = enemies[i].counter / 100;
+                    enemies[i].rotation += 0.2;
                     enemies[i].counter--;
                 } else {
                     toRemove = i;
