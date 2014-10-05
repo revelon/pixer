@@ -24,8 +24,9 @@
 </head>
 <body>
 <script>
-// create an array of assets to load; replace with dynamic loader
+// create an array of assets to load
 var assetsToLoad = ["background/calanques.jpg", "background/camarque.jpg", "gfx/water-splash.png"];
+var sfxAssets = ["sfx/sb-16-40.mp3"];
 // collect dynamically all assets necessary to load
 var dedupl = {}
 for (var i in levels) {
@@ -40,9 +41,12 @@ for (var i in levels) {
                 dedupl[levels[i].enemy[x].texture] = 1;
             }
         }
+        for (var x = 0; x < levels[i].sfx.length; x++) {
+            sfxAssets.push(levels[i].sfx[x]);
+        }
     }
 }
-console.log("assetsToLoad", assetsToLoad);
+console.log("assetsToLoad", assetsToLoad, sfxAssets);
 // create a new loader
 loader = new PIXI.AssetLoader(assetsToLoad);
 // use callback to begin the game itself
@@ -50,13 +54,10 @@ loader.onComplete = goGame;
 //begin assets loading
 loader.load();
 
-var music = new Howl({
-  urls: ["sfx/sb-16-40.mp3"],
-  autoplay: true,
-  buffer: true,
-  loop: true,
-  volume: 0.2
-});
+// sfx loader loop
+for (var i in sfxAssets) {
+    new Howl({urls: [sfxAssets[i]]});
+}
 
 function goGame() {
     var score = 0;
@@ -72,6 +73,7 @@ function goGame() {
     var enemies = [];
     var last = null;
     var secondToLast = null;
+    var music = true;
 
     // Create a pixi renderer
     var renderer = PIXI.autoDetectRenderer(viewWidth, viewHeight);
@@ -82,6 +84,15 @@ function goGame() {
 
     // create an new instance of a pixi stage
     var stage = new PIXI.Stage(0xFFFFFF);
+
+    var realMusic = new Howl({
+      urls: ["sfx/sb-16-40.mp3"],
+      autoplay: music,
+      buffer: true,
+      loop: true,
+      volume: 0.15
+    });
+
 
     // background image
     var bg = PIXI.Sprite.fromImage("background/calanques.jpg" );
@@ -208,7 +219,8 @@ function goGame() {
                 this.status = "dying";
                 this.counter = 50; // fixed dying length
                 score++;
-                new Howl({urls:[levels[level].sfx]}).play();
+                new Howl({urls:[levels[level].sfx][(Math.round(Math.random()*20)%2==0?1:0)], 
+                    volume:(Math.round(Math.random()*4+1)/5)}).play();
                 createEnemy(); // another
             }
         };
