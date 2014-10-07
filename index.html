@@ -93,9 +93,9 @@ function goGame() {
       volume: 0.15
     });
 
-
     // background image
     var bg = PIXI.Sprite.fromImage("background/calanques.jpg" );
+    //var bg = PIXI.Sprite.fromImage("background/alley.jpg" );
     stage.interactive = true;
     stage.addChild(bg);
     
@@ -217,6 +217,9 @@ function goGame() {
         var enemy = new PIXI.DisplayObjectContainer();
         var enemyPic = PIXI.Sprite.fromImage(model.texture);
         enemy.addChild(enemyPic);
+        if (model.rotate) {
+            enemy.rotation = model.rotate;
+        }
         
         enemy.model = model;
         // enable the enemy to be interactive.. this will allow it to respond to mouse and touch events
@@ -272,9 +275,6 @@ function goGame() {
         var toRemove = null;
         for (var i in enemies) {
             if (!enemies.hasOwnProperty(i)) continue;
-            if (enemies[i].model.rotate) {
-                enemies[i].rotation += enemies[i].model.rotate;
-            }
             if (enemies[i].status === "comming") {
                 if (enemies[i].counter) {
                     enemies[i].position[enemies[i].model.axis] += enemies[i].model.speed;
