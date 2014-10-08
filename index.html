@@ -206,7 +206,7 @@ function goGame() {
     };
 
     // path coordination tester / level designer tool
-    var lvl = 1;
+    var lvl = 0;
     if (lvl) {
         for (var c = 0; c < levels[lvl].enemy.length; c++) {
             var msk = renderPath(levels[lvl].enemy[c].mask);
@@ -235,7 +235,7 @@ function goGame() {
                 last = idx;
             }
         }
-        var model = levels[level].enemy[12];
+        var model = levels[level].enemy[last];
         log("Generating new enemy", model); 
         // create enemy visualization
         var enemy = new PIXI.DisplayObjectContainer();
