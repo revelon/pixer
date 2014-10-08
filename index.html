@@ -113,8 +113,8 @@ function goGame() {
 
     // sound control
     var snd = PIXI.Sprite.fromImage("gfx/music-256.png");
-    snd.position.x = 910; snd.position.y = 15;
-    snd.scale.x = 0.15; snd.scale.y = 0.2;
+    snd.position.x = 905; snd.position.y = 15;
+    snd.scale.x = 0.2; snd.scale.y = 0.2;
     snd.interactive = true;
     stage.addChild(snd);
     // use the mouse-down and touch-start
@@ -206,7 +206,7 @@ function goGame() {
     };
 
     // path coordination tester / level designer tool
-    var lvl = 0;
+    var lvl = 1;
     if (lvl) {
         for (var c = 0; c < levels[lvl].enemy.length; c++) {
             var msk = renderPath(levels[lvl].enemy[c].mask);
@@ -235,7 +235,7 @@ function goGame() {
                 last = idx;
             }
         }
-        var model = levels[level].enemy[last];
+        var model = levels[level].enemy[12];
         log("Generating new enemy", model); 
         // create enemy visualization
         var enemy = new PIXI.DisplayObjectContainer();
