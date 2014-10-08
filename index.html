@@ -1,8 +1,8 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-
-<title>Gaming Experiment</title>
+<meta charset="UTF-8">
+<title>Pixer Gaming Experiment by raidam</title>
 <style>
     body {
         margin: 0;
@@ -24,8 +24,12 @@
 </head>
 <body>
 <script>
+function log() {
+    console.log(arguments);
+}
+
 // create an array of assets to load
-var assetsToLoad = ["background/calanques.jpg", "background/camarque.jpg", "gfx/water-splash.png", "gfx/music-256.png"];
+var assetsToLoad = ["background/calanques.jpg", "background/camarque.jpg", "gfx/water-splash.png", "gfx/music-256.png", "gfx/banner-bended-glossy-ribbon-rectangular-orange.png"];
 var sfxAssets = ["sfx/sb-16-40.mp3"];
 // collect dynamically all assets necessary to load
 var dedupl = {}
@@ -46,7 +50,7 @@ for (var i in levels) {
         }
     }
 }
-console.log("assetsToLoad", assetsToLoad, sfxAssets);
+log("assetsToLoad", assetsToLoad, sfxAssets);
 // create a new loader
 loader = new PIXI.AssetLoader(assetsToLoad);
 // use callback to begin the game itself
@@ -59,6 +63,7 @@ for (var i in sfxAssets) {
     new Howl({urls: [sfxAssets[i]]});
 }
 
+// game handler itself, triggered after assets are loaded
 function goGame() {
     var score = 0;
     var life = 20;
@@ -86,40 +91,17 @@ function goGame() {
     var stage = new PIXI.Stage(0xFFFFFF);
 
     var realMusic = new Howl({
-      urls: ["sfx/sb-16-40.mp3"],
-      autoplay: music,
-      buffer: true,
-      loop: true,
-      volume: 0.15
+        urls: ["sfx/sb-16-40.mp3"],
+        autoplay: music,
+        buffer: true,
+        loop: true,
+        volume: 0.15
     });
 
     // background image
     var bg = PIXI.Sprite.fromImage("background/calanques.jpg" );
     //var bg = PIXI.Sprite.fromImage("background/alley.jpg" );
-    stage.interactive = true;
     stage.addChild(bg);
-    
-    // use the mouse-down and touch-start in between levels
-    stage.mousedown = stage.touchstart = function(data) {
-        console.log("Stage event", data);
-        // stop the default event...
-        data.originalEvent.preventDefault();
-        if (data.target.soundControl) {
-            // xxx
-        } else {
-            stage.interactive = false;
-            levelEnemiesDone = 0;
-            stage.removeChild(levelText);
-            console.log("Level " + level + " started");
-            bg.setTexture(PIXI.Texture.fromImage(levels[level].poster));
-
-            // generate first enemy now and set flag
-            createEnemy();
-            running = true;
-            // and start animations
-            requestAnimFrame(animate);
-        }
-    };
     
     // utility, primary for rendering SVG path based masks
     function renderPath(data) {
@@ -142,12 +124,11 @@ function goGame() {
     snd.position.x = 910; snd.position.y = 15;
     snd.scale.x = 0.15; snd.scale.y = 0.2;
     snd.interactive = true;
-    snd.soundControl = true;
     stage.addChild(snd);
     // use the mouse-down and touch-start
     snd.mousedown = snd.touchstart = function(data) {
         // stop the default event...
-        console.log("Sound event", data);
+        log("Sound event", data);
         data.originalEvent.preventDefault();
         if (music) {
             music = false;
@@ -158,6 +139,7 @@ function goGame() {
             Howler.unmute();
             snd.alpha = 1;
         }
+        renderer.render(stage);
     };
     
     // mandatory status texts
@@ -180,6 +162,37 @@ function goGame() {
     levelText.position.x = 220;
     levelText.position.y = 260;
     stage.addChild(levelText);
+
+    var actionButton = new PIXI.DisplayObjectContainer();
+    var actionText = new PIXI.Text("Continue", { font: "60px sans-serif", fill: "green", dropShadow: true, align: "center" });
+    actionText.position.x = 375;
+    actionText.position.y = 450;
+    var banner = PIXI.Sprite.fromImage("gfx/banner-bended-glossy-ribbon-rectangular-orange.png");
+    banner.position.x = 340; banner.position.y = 430;
+    banner.scale.x = 0.5; banner.scale.y = 0.5;
+    actionButton.interactive = true;
+    actionButton.addChild(banner);
+    actionButton.addChild(actionText);
+    stage.addChild(actionButton);
+
+    // use the mouse-down and touch-start in between levels
+    actionButton.mousedown = actionButton.touchstart = function(data) {
+        log("actionButton event", data);
+        // stop the default event...
+        data.originalEvent.preventDefault();
+        actionButton.interactive = false;
+        levelEnemiesDone = 0;
+        stage.removeChild(levelText);
+        stage.removeChild(actionButton);
+        log("Level " + level + " started");
+        bg.setTexture(PIXI.Texture.fromImage(levels[level].poster));
+
+        // generate first enemy now and set flag
+        createEnemy();
+        running = true;
+        // and start animations
+        requestAnimFrame(animate);
+    };
 
     // path coordination tester / level designer tool
     var lvl = 0;
@@ -212,7 +225,7 @@ function goGame() {
             }
         }
         var model = levels[level].enemy[last];
-        console.log("Generating new enemy", model); 
+        log("Generating new enemy", model); 
         // create enemy visualization
         var enemy = new PIXI.DisplayObjectContainer();
         var enemyPic = PIXI.Sprite.fromImage(model.texture);
@@ -243,7 +256,7 @@ function goGame() {
         // use the mouse-down and touch-start
         enemy.mousedown = enemy.touchstart = function(data) {
             if (!running) return;
-            console.log("Sprite Click Happened", this.status, data);
+            log("Sprite Click Happened", this.status, data);
             // stop the default event...
             data.originalEvent.preventDefault();
             if (this.status !== "dying") {
@@ -336,10 +349,11 @@ function goGame() {
 
         // check whether to continue animation or not
         if (life < 1) {
-            console.log("Game's end");
+            log("Game's end");
             levelText.setText("You are dead, your score was: " + score + "\n...tap or click to start...");
             bg.setTexture(PIXI.Texture.fromImage("background/camarque.jpg"));
             stage.addChild(levelText);
+            stage.addChild(actionButton);
             score = 0;
             life = 20;
             level = 1;
@@ -352,15 +366,16 @@ function goGame() {
                 }
             }
             enemies = [];            
-            stage.interactive = true;
+            actionButton.interactive = true;
         } else if (levelEnemiesDone === levels[level].enemiesNo && !enemies.length) {
             // level done
-            console.log("Level " + level + " ended");
+            log("Level " + level + " ended");
             level++;
             levelText.setText("Level: " + level + " ...tap or click to start...");
             bg.setTexture(PIXI.Texture.fromImage("background/calanques.jpg"));
             stage.addChild(levelText);
-            stage.interactive = true;
+            stage.addChild(actionButton);
+            actionButton.interactive = true;
             running = false;
             for (var x in enemies) {
                 if (enemies.hasOwnProperty(x)) {
