@@ -66,7 +66,7 @@ for (var i in sfxAssets) {
 // game handler itself, triggered after assets are loaded
 function goGame() {
     var score = 0;
-    var life = 20;
+    var life = 30;
     var level = 1;
     var levelEnemiesDone = 0;
     var running = false;
@@ -78,7 +78,7 @@ function goGame() {
     var enemies = [];
     var last = null;
     var secondToLast = null;
-    var music = true;
+    var music = false;    
 
     // Create a pixi renderer
     var renderer = PIXI.autoDetectRenderer(viewWidth, viewHeight);
@@ -89,14 +89,6 @@ function goGame() {
 
     // create an new instance of a pixi stage
     var stage = new PIXI.Stage(0xFFFFFF);
-
-    var realMusic = new Howl({
-        urls: ["sfx/sb-16-40.mp3"],
-        autoplay: music,
-        buffer: true,
-        loop: true,
-        volume: 0.15
-    });
 
     // background image
     var bg = PIXI.Sprite.fromImage("background/calanques.jpg" );
@@ -132,15 +124,34 @@ function goGame() {
         data.originalEvent.preventDefault();
         if (music) {
             music = false;
-            Howler.mute();
+            localStorage.setItem("music", music);
+            realMusic.pause();
             snd.alpha = 0.5;
         } else {
             music = true;
-            Howler.unmute();
+            localStorage.setItem("music", music);
+            realMusic.play();
             snd.alpha = 1;
         }
         renderer.render(stage);
     };
+
+    // in-game music object
+    var realMusic = new Howl({
+        urls: ["sfx/sb-16-40.mp3"],
+        buffer: true,
+        loop: true,
+        volume: 0.17
+    });
+    music = (localStorage.getItem("music") === "true") ? true : false;
+    log("Music status", music);    
+    if (music) {
+        realMusic.play();
+        snd.alpha = 1;
+    } else {
+        realMusic.pause();
+        snd.alpha = 0.5;
+    }
     
     // mandatory status texts
     var scoreText = new PIXI.Text("Score: " + score, { font: "20px sans-serif", fill: "blue" });
@@ -158,9 +169,9 @@ function goGame() {
     countText.position.y = 70;
     stage.addChild(countText);
 
-    var levelText = new PIXI.Text("Level: " + level + " ...tap or click to start...", { font: "42px sans-serif", fill: "maroon", dropShadow: true, align: "center" });
-    levelText.position.x = 220;
-    levelText.position.y = 260;
+    var levelText = new PIXI.Text("    Level " + level, { font: "120px sans-serif", stroke:"gold", strokeThickness:4, fill: "maroon", dropShadow: true, dropShadowDistance:10, align: "center" });
+    levelText.position.x = 180;
+    levelText.position.y = 140;
     stage.addChild(levelText);
 
     var actionButton = new PIXI.DisplayObjectContainer();
@@ -263,8 +274,10 @@ function goGame() {
                 this.status = "dying";
                 this.counter = 50; // fixed dying length
                 score++;
-                new Howl({urls:[levels[level].sfx[(Math.round(Math.random()*20)%2==0?1:0)]], 
-                    volume:(Math.round(Math.random()*4+1)/5)}).play();
+                if (music) {
+                    new Howl({urls:[levels[level].sfx[(Math.round(Math.random()*20)%2==0?1:0)]], 
+                        volume:(Math.round(Math.random()*4+1)/5)}).play();
+                }
                 createEnemy(); // another
             }
         };
@@ -302,7 +315,9 @@ function goGame() {
                         fire.anchor.x = fire.anchor.y = 0.5;
                         enemies[i].addChild(fire);
                         enemies[i].fire = fire;
-                        new Howl({urls:["sfx/186748__rombart__splash-eau-goudron1.mp3"]}).play();
+                        if (music) {
+                            new Howl({urls:["sfx/186748__rombart__splash-eau-goudron1.mp3"]}).play();
+                        }
                     }
                     fire.alpha = 1;
                 }
@@ -350,12 +365,12 @@ function goGame() {
         // check whether to continue animation or not
         if (life < 1) {
             log("Game's end");
-            levelText.setText("You are dead, your score was: " + score + "\n...tap or click to start...");
+            levelText.setText("Game Over\nScore: " + score);
             bg.setTexture(PIXI.Texture.fromImage("background/camarque.jpg"));
             stage.addChild(levelText);
             stage.addChild(actionButton);
             score = 0;
-            life = 20;
+            life = 30;
             level = 1;
             levelEnemiesDone = 0;
             running = false;
@@ -371,7 +386,7 @@ function goGame() {
             // level done
             log("Level " + level + " ended");
             level++;
-            levelText.setText("Level: " + level + " ...tap or click to start...");
+            levelText.setText("    Level " + level);
             bg.setTexture(PIXI.Texture.fromImage("background/calanques.jpg"));
             stage.addChild(levelText);
             stage.addChild(actionButton);
@@ -384,8 +399,8 @@ function goGame() {
             }
             enemies = [];
         } else {
-            // add new enemy here
-            if (!(count % 400)) {
+            // add new enemy here with level offset
+            if (!(count % (400 - ((level-1)*50)))) {
                 createEnemy();
             }
             if (running) {
