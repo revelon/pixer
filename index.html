@@ -143,8 +143,8 @@ function goGame() {
         loop: true,
         volume: 0.17
     });
-    music = (localStorage.getItem("music") === "true") ? true : false;
-    log("Music status", music);    
+    music = (localStorage.getItem("music") === "false") ? false : true;
+    log("Music status", music);
     if (music) {
         realMusic.play();
         snd.alpha = 1;
