@@ -196,7 +196,7 @@ function goGame() {
     
     // sound control
     var snd = PIXI.Sprite.fromImage("gfx/music-icon.png");
-    snd.position.x = 880; snd.position.y = 10;
+    snd.position.x = 885; snd.position.y = 10;
     snd.scale.x = 0.25; snd.scale.y = 0.25;
     snd.interactive = true;
     stage.addChild(snd);
@@ -247,22 +247,22 @@ function goGame() {
     scoreText.position.y = 40;
     stage.addChild(scoreText);
 
-    var countText = new PIXI.Text("Count: " + count, { font: "16px sans-serif", fill: "white" });
+    var countText = new PIXI.Text("Count: " + count, { font: "13px sans-serif", fill: "white" });
     countText.position.x = 10;
     countText.position.y = 72;
     stage.addChild(countText);
 
     var levelText = new PIXI.Text("    Level " + level, { font: "120px sans-serif", stroke:"gold", strokeThickness:5, fill: "maroon", dropShadow: true, dropShadowDistance:10, align: "center" });
     levelText.position.x = 170;
-    levelText.position.y = 140;
+    levelText.position.y = 125;
     stage.addChild(levelText);
 1
     var helpText = new PIXI.Text("Tap the animals before they will spit on you. And better be quick!", { font: "32px sans-serif", fill: "white", dropShadow: true, dropShadowDistance:3, align: "center" });
-    helpText.position.x = 25;
+    helpText.position.x = 10;
     helpText.position.y = 295;
     
     var copyText = new PIXI.Text("Pictures by Jana Raidova, Programming and Music by Marek Raida, SFX from freesound.org", { font: "18px sans-serif", fill: "black", align: "center" });
-    copyText.position.x = 130;
+    copyText.position.x = 125;
     copyText.position.y = 90;
     stage.addChild(copyText);
     
