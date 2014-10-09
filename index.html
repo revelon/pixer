@@ -29,7 +29,7 @@ function log() {
 }
 
 // create an array of assets to load
-var assetsToLoad = ["background/lustrel.jpg", "background/calanques.jpg", "background/camarque.jpg", "gfx/water-splash.png", "gfx/music-256.png", "gfx/banner-bended-glossy-ribbon-rectangular-orange.png"];
+var assetsToLoad = ["background/lustrel.jpg", "background/calanques.jpg", "background/camarque.jpg", "gfx/water-splash.png", "gfx/music-icon.png", "gfx/banner-bended-glossy-ribbon-rectangular-orange.png"];
 var sfxAssets = ["sfx/sb-16-40.mp3"];
 // collect dynamically all assets necessary to load
 var dedupl = {}
@@ -112,9 +112,9 @@ function goGame() {
     }
 
     // sound control
-    var snd = PIXI.Sprite.fromImage("gfx/music-256.png");
-    snd.position.x = 905; snd.position.y = 15;
-    snd.scale.x = 0.2; snd.scale.y = 0.2;
+    var snd = PIXI.Sprite.fromImage("gfx/music-icon.png");
+    snd.position.x = 880; snd.position.y = 10;
+    snd.scale.x = 0.25; snd.scale.y = 0.25;
     snd.interactive = true;
     stage.addChild(snd);
     // use the mouse-down and touch-start
@@ -126,7 +126,7 @@ function goGame() {
             music = false;
             localStorage.setItem("music", music);
             realMusic.pause();
-            snd.alpha = 0.5;
+            snd.alpha = 0.4;
         } else {
             music = true;
             localStorage.setItem("music", music);
@@ -150,26 +150,26 @@ function goGame() {
         snd.alpha = 1;
     } else {
         realMusic.pause();
-        snd.alpha = 0.5;
+        snd.alpha = 0.4;
     }
     
     // mandatory status texts
-    var scoreText = new PIXI.Text("Score: " + score, { font: "20px sans-serif", fill: "blue" });
+    var lifeText = new PIXI.Text("Life: " + life, { font: "28px sans-serif", fill: "darkgreen", dropShadow: true, dropShadowDistance: 2 });
+    lifeText.position.x = 10;
+    lifeText.position.y = 10;
+    stage.addChild(lifeText);
+
+    var scoreText = new PIXI.Text("Score: " + score, { font: "28px sans-serif", fill: "navy", dropShadow: true, dropShadowDistance: 2 });
     scoreText.position.x = 10;
-    scoreText.position.y = 10;
+    scoreText.position.y = 40;
     stage.addChild(scoreText);
 
-    var lifeText = new PIXI.Text("Life: " + life, { font: "20px sans-serif", fill: "darkgreen" });
-    lifeText.position.x = 10;
-    lifeText.position.y = 40;
-    stage.addChild(lifeText);
-    
-    var countText = new PIXI.Text("Count: " + count, { font: "20px sans-serif", fill: "black" });
+    var countText = new PIXI.Text("Count: " + count, { font: "16px sans-serif", fill: "black" });
     countText.position.x = 10;
     countText.position.y = 70;
     stage.addChild(countText);
 
-    var levelText = new PIXI.Text("    Level " + level, { font: "120px sans-serif", stroke:"gold", strokeThickness:4, fill: "maroon", dropShadow: true, dropShadowDistance:10, align: "center" });
+    var levelText = new PIXI.Text("    Level " + level, { font: "120px sans-serif", stroke:"gold", strokeThickness:5, fill: "maroon", dropShadow: true, dropShadowDistance:10, align: "center" });
     levelText.position.x = 180;
     levelText.position.y = 140;
     stage.addChild(levelText);
