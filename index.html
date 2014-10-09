@@ -78,7 +78,8 @@ function goGame() {
     var enemies = [];
     var last = null;
     var secondToLast = null;
-    var music = false;    
+    var music = false;
+    var nextAction = null;
 
     // Create a pixi renderer
     var renderer = PIXI.autoDetectRenderer(viewWidth, viewHeight);
@@ -92,7 +93,6 @@ function goGame() {
 
     // background image
     var bg = PIXI.Sprite.fromImage("background/calanques.jpg" );
-    //var bg = PIXI.Sprite.fromImage("background/alley.jpg" );
     stage.addChild(bg);
     
     // utility, primary for rendering SVG path based masks
@@ -111,6 +111,89 @@ function goGame() {
         return m;
     }
 
+    // method displaying start screen
+    function startScreen() {
+        bg.setTexture(PIXI.Texture.fromImage("background/calanques.jpg"));
+        score = 0;
+        life = 30;
+        level = 0;
+        levelEnemiesDone = 0;
+        running = false;
+        count = 0;
+        clearEnemies();
+        nextAction = levelScreen;
+        levelText.setText("Provence\nAnimal Hunter");
+        levelText.position.x = 110;
+        countText.setText("Count: " + count);
+        stage.addChild(levelText);
+        stage.addChild(actionButton);
+        stage.addChild(copyText)
+        actionButton.interactive = true;
+        renderer.render(stage);
+    }
+    
+    // method displaying in-between-level screen
+    function levelScreen() {
+        // level done
+        log("Level " + level, helpText);
+        level++;
+        levelText.setText("    Level " + level);
+        levelText.position.x = 170;
+        bg.setTexture(PIXI.Texture.fromImage("background/lustrel.jpg"));
+        stage.addChild(levelText);
+        stage.addChild(actionButton);
+        stage.addChild(helpText);
+        if (copyText.stage) {
+            stage.removeChild(copyText);
+        }
+        actionButton.interactive = true;
+        running = false;
+        clearEnemies();
+        nextAction = levelScreenGo;
+        renderer.render(stage);
+    }
+    
+    // method displaying in-between-level screen
+    function levelScreenGo() {
+        levelEnemiesDone = 0;
+        actionButton.interactive = false;
+        stage.removeChild(levelText);
+        stage.removeChild(helpText);
+        stage.removeChild(actionButton);
+        log("Level " + level + " started");
+        bg.setTexture(PIXI.Texture.fromImage(levels[level].poster));
+        // generate first enemy now and set flag
+        clearEnemies();
+        running = true;
+        // and start animations
+        requestAnimFrame(animate);
+        renderer.render(stage);
+    }
+
+    // method displaying end screen
+    function endScreen() {
+        log("Game's end");
+        levelText.setText("Game Over\nScore: " + score);
+        bg.setTexture(PIXI.Texture.fromImage("background/camarque.jpg"));
+        stage.addChild(levelText);
+        stage.addChild(actionButton);
+        running = false;
+        clearEnemies();
+        actionButton.interactive = true;
+        nextAction = startScreen;
+        renderer.render(stage);
+    }
+
+    // helper method
+    function clearEnemies() {
+        for (var x in enemies) {
+            if (enemies.hasOwnProperty(x)) {
+                stage.removeChild(enemies[x]);
+            }
+        }
+        enemies = [];
+    }
+    
     // sound control
     var snd = PIXI.Sprite.fromImage("gfx/music-icon.png");
     snd.position.x = 880; snd.position.y = 10;
@@ -154,32 +237,42 @@ function goGame() {
     }
     
     // mandatory status texts
-    var lifeText = new PIXI.Text("Life: " + life, { font: "28px sans-serif", fill: "darkgreen", dropShadow: true, dropShadowDistance: 2 });
+    var lifeText = new PIXI.Text("Life: " + life, { font: "30px sans-serif", fill: "lightgreen", dropShadow: true, dropShadowDistance: 2 });
     lifeText.position.x = 10;
     lifeText.position.y = 10;
     stage.addChild(lifeText);
 
-    var scoreText = new PIXI.Text("Score: " + score, { font: "28px sans-serif", fill: "navy", dropShadow: true, dropShadowDistance: 2 });
+    var scoreText = new PIXI.Text("Score: " + score, { font: "30px sans-serif", fill: "lightblue", dropShadow: true, dropShadowDistance: 2 });
     scoreText.position.x = 10;
     scoreText.position.y = 40;
     stage.addChild(scoreText);
 
-    var countText = new PIXI.Text("Count: " + count, { font: "16px sans-serif", fill: "black" });
+    var countText = new PIXI.Text("Count: " + count, { font: "16px sans-serif", fill: "white" });
     countText.position.x = 10;
-    countText.position.y = 70;
+    countText.position.y = 72;
     stage.addChild(countText);
 
     var levelText = new PIXI.Text("    Level " + level, { font: "120px sans-serif", stroke:"gold", strokeThickness:5, fill: "maroon", dropShadow: true, dropShadowDistance:10, align: "center" });
-    levelText.position.x = 180;
+    levelText.position.x = 170;
     levelText.position.y = 140;
     stage.addChild(levelText);
-
+1
+    var helpText = new PIXI.Text("Tap the animals before they will spit on you. And better be quick!", { font: "32px sans-serif", fill: "white", dropShadow: true, dropShadowDistance:3, align: "center" });
+    helpText.position.x = 25;
+    helpText.position.y = 295;
+    
+    var copyText = new PIXI.Text("Pictures by Jana Raidova, Programming and Music by Marek Raida, SFX from freesound.org", { font: "18px sans-serif", fill: "black", align: "center" });
+    copyText.position.x = 130;
+    copyText.position.y = 90;
+    stage.addChild(copyText);
+    
+    
     var actionButton = new PIXI.DisplayObjectContainer();
     var actionText = new PIXI.Text("Continue", { font: "60px sans-serif", fill: "green", dropShadow: true, align: "center" });
     actionText.position.x = 375;
     actionText.position.y = 450;
     var banner = PIXI.Sprite.fromImage("gfx/banner-bended-glossy-ribbon-rectangular-orange.png");
-    banner.position.x = 340; banner.position.y = 430;
+    banner.position.x = 336; banner.position.y = 430;
     banner.scale.x = 0.5; banner.scale.y = 0.5;
     actionButton.interactive = true;
     actionButton.addChild(banner);
@@ -191,18 +284,7 @@ function goGame() {
         log("actionButton event", data);
         // stop the default event...
         data.originalEvent.preventDefault();
-        actionButton.interactive = false;
-        levelEnemiesDone = 0;
-        stage.removeChild(levelText);
-        stage.removeChild(actionButton);
-        log("Level " + level + " started");
-        bg.setTexture(PIXI.Texture.fromImage(levels[level].poster));
-
-        // generate first enemy now and set flag
-        createEnemy();
-        running = true;
-        // and start animations
-        requestAnimFrame(animate);
+        nextAction();
     };
 
     // path coordination tester / level designer tool
@@ -216,10 +298,15 @@ function goGame() {
             xx.position.x = levels[lvl].enemy[c].x;
             xx.position.y = levels[lvl].enemy[c].y;
             xx.scale.x = xx.scale.y = levels[lvl].enemy[c].scale;
-            //stage.addChild(xx);
+            stage.addChild(xx);
         }
     }
-    
+
+
+
+
+    // show start screen for the first time
+    startScreen();
     // render the stage itself for the first time
     renderer.render(stage);
    
@@ -364,40 +451,9 @@ function goGame() {
 
         // check whether to continue animation or not
         if (life < 1) {
-            log("Game's end");
-            levelText.setText("Game Over\nScore: " + score);
-            bg.setTexture(PIXI.Texture.fromImage("background/camarque.jpg"));
-            stage.addChild(levelText);
-            stage.addChild(actionButton);
-            score = 0;
-            life = 30;
-            level = 1;
-            levelEnemiesDone = 0;
-            running = false;
-            count = 0;
-            for (var x in enemies) {
-                if (enemies.hasOwnProperty(x)) {
-                    stage.removeChild(enemies[x]);
-                }
-            }
-            enemies = [];            
-            actionButton.interactive = true;
+            endScreen();
         } else if (levelEnemiesDone === levels[level].enemiesNo && !enemies.length) {
-            // level done
-            log("Level " + level + " ended");
-            level++;
-            levelText.setText("    Level " + level);
-            bg.setTexture(PIXI.Texture.fromImage("background/calanques.jpg"));
-            stage.addChild(levelText);
-            stage.addChild(actionButton);
-            actionButton.interactive = true;
-            running = false;
-            for (var x in enemies) {
-                if (enemies.hasOwnProperty(x)) {
-                    stage.removeChild(enemies[x]);
-                }
-            }
-            enemies = [];
+            levelScreen();
         } else {
             // add new enemy here with level offset
             if (!(count % (400 - ((level-1)*50)))) {
