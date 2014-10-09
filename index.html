@@ -29,7 +29,7 @@ function log() {
 }
 
 // create an array of assets to load
-var assetsToLoad = ["background/calanques.jpg", "background/camarque.jpg", "gfx/water-splash.png", "gfx/music-256.png", "gfx/banner-bended-glossy-ribbon-rectangular-orange.png"];
+var assetsToLoad = ["background/lustrel.jpg", "background/calanques.jpg", "background/camarque.jpg", "gfx/water-splash.png", "gfx/music-256.png", "gfx/banner-bended-glossy-ribbon-rectangular-orange.png"];
 var sfxAssets = ["sfx/sb-16-40.mp3"];
 // collect dynamically all assets necessary to load
 var dedupl = {}
@@ -141,7 +141,7 @@ function goGame() {
         urls: ["sfx/sb-16-40.mp3"],
         buffer: true,
         loop: true,
-        volume: 0.17
+        volume: 0.4
     });
     music = (localStorage.getItem("music") === "false") ? false : true;
     log("Music status", music);
@@ -235,7 +235,7 @@ function goGame() {
                 last = idx;
             }
         }
-        var model = levels[level].enemy[last];
+        var model = levels[level].enemy[last]; // testing individual enemies here by index
         log("Generating new enemy", model); 
         // create enemy visualization
         var enemy = new PIXI.DisplayObjectContainer();
