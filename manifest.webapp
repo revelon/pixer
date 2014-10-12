@@ -1,7 +1,7 @@
 {
-  "version": "0.2",
+  "version": "1.0",
   "name": "Animal Hunter",
-  "description": "Visit several Provence locations and hunt down all wild animals spitting on you their saliva.",
+  "description": "Visit several Provence locations and hunt down all wild animals spitting on you their saliva...",
   "launch_path": "/index.html",
   "developer": {
     "name": "Marek Raida <marek.raida@gmail.com>",
@@ -9,9 +9,12 @@
   },
   "installs_allowed_from": ["*"],
   "icons": {
-    "128": "/icons/ico128.png",
-    "64": "/icons/ico64.png",
-    "32": "/icons/32.png"
+    "128": "/icons/icon128.png",
+    "128": "/icons/icon120.png",
+    "64": "/icons/icon64.png",
+    "64": "/icons/icon60.png",
+    "32": "/icons/icon32.png",
+    "32": "/icons/icon30.png"    
   },
   "orientation": "landscape-primary",
   "fullscreen": "true"
