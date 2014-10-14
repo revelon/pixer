@@ -1,5 +1,5 @@
 {
-  "version": "1.02",
+  "version": "1.03",
   "name": "Animal Hunter",
   "description": "Visit several Provence locations and hunt down all wild animals spitting on you their saliva...",
   "launch_path": "/index.html",
@@ -20,6 +20,10 @@
     "en": {
       "name": "Animal Hunter",
       "description": "Visit several Provence locations and hunt down all wild animals spitting on you their saliva..."
+    },
+    "cs": {
+      "name": "Lovec zvířat",
+      "description": "Navštivte několik míst v Provence a ulovte všechna divoká zvířata raději dříve, než na vás plivnou své ohavné sliny..."
     }
   },
   "default_locale": "en",
